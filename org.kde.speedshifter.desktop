@@ -1,0 +1,18 @@
+[Desktop Entry]
+Name=Speed Shifter
+Name[ca]=Canviador de velocitat
+Name[cs]=Řazení rychlosti
+Name[eo]=Rapida Ŝanĝilo
+Name[fr]=Manette de Vitesse
+Name[nl]=Snelheid Wisselaar
+Name[it]=Cambio di velocità
+Name[sl]=Menjalnik hitrosti
+Name[sv]=Hastighetsväxling
+Name[tr]=Hız Değiştirici
+Name[uk]=Перемикач швидкості
+Name[zh_TW]=Biànsù xiāng變速箱
+Exec=speedshifter
+Icon=kde
+Type=Application
+Terminal=false
+Categories=Utility
