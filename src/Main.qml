@@ -33,14 +33,24 @@ Kirigami.ApplicationWindow {
         title: i18nc("@title", "Speed Shifter")
 
         ColumnLayout {
+            anchors.fill: parent
             Controls.Dial {
                 id: speedSlider
-                // Layout.aligment: Qt.AlignCenter
-                // Layout.fillWidth: true
-                // orientation: Qt.Horizontal
-                value: 50
-                to: 100
+                Layout.alignment: Qt.AlignCenter
+                Layout.fillWidth: true
+                width: maximumWidth
+                snapMode: Controls.Dial.SnapAlways
+                value: 100
+                to: 200
+                stepSize: 4.0
+                Controls.Label {
+                    Layout.alignment: Qt.AlignHCenter
+                    anchors.centerIn: parent
+                    text: speedSlider.value
+                }
             }
+
+
         }
     }
 }
