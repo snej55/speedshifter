@@ -57,8 +57,7 @@ Kirigami.ApplicationWindow {
         nameFilters: ["Audio file (*.mp3 *.wma *.wav *.ogg *.flac)"]
         onAccepted: {
             musicPath.text = basename(selectedFile.toString())
-            Player.filePath = musicPath.text
-            musicPath.text = Player.filePath
+            Player.filePath = selectedFile.toString()
         }
     }
 

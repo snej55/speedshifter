@@ -62,6 +62,8 @@ int main(int argc, char* argv[])
     Player player;
     registerPlayer(player);
 
+    player.init(argc, argv);
+
     engine.rootContext()->setContextObject(new KLocalizedContext(&engine));
     engine.loadFromModule("org.kde.speedshifter", "Main");
 
