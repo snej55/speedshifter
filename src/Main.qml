@@ -91,6 +91,9 @@ Kirigami.ApplicationWindow {
                     anchors.centerIn: parent
                     text: (speedSlider.value > 100 ? '+' : '') + (speedSlider.value - 100) + '%'
                 }
+                onMoved: {
+                    Player.playbackSpeed = speedSlider.value / 100
+                }
             }
 
             Controls.Label {
