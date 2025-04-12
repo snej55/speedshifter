@@ -57,6 +57,8 @@ Kirigami.ApplicationWindow {
         nameFilters: ["Audio file (*.mp3 *.wma *.wav *.ogg *.flac)"]
         onAccepted: {
             musicPath.text = basename(selectedFile.toString())
+            Player.filePath = musicPath.text
+            musicPath.text = Player.filePath
         }
     }
 
@@ -74,6 +76,7 @@ Kirigami.ApplicationWindow {
         ]
 
         ColumnLayout {
+            enabled: musicPath.text ? true : false
             anchors.fill: parent
             Controls.Dial {
                 id: speedSlider

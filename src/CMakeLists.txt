@@ -17,6 +17,13 @@ ecm_target_qml_sources(speedshifter
     Main.qml
 )
 
+# qt_add_qml_module(speedshifter
+#     URI org.kde.speedshifter.player
+#     VERSION 1.0
+#     SOURCES
+#     player.h player.cpp
+# )
+
 target_link_libraries(speedshifter
     PRIVATE
     Qt6::Core
@@ -25,9 +32,11 @@ target_link_libraries(speedshifter
     Qt6::Gui
     Qt6::QuickControls2
     Qt6::Widgets
+    Qt6::Multimedia
     KF6::I18n
     KF6::CoreAddons
     KF6::IconThemes
+    ${GSTREAMER_LIBRARIES}
 )
 
 install(TARGETS speedshifter ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
