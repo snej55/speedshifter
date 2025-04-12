@@ -2,6 +2,8 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls as Controls
+// import QtQuick.Dialogs As Dialogs
+import QtQuick.Dialogs
 import org.kde.kirigami as Kirigami
 
 // basic features required for kirigami application
@@ -28,6 +30,14 @@ Kirigami.ApplicationWindow {
         ]
     }
 
+    FileDialog {
+        id: musicSelect
+        currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
+        onAccepted: {
+            musicPath.text = selectedFile
+        }
+    }
+
     // set first page that will be loaded when app opens
     pageStack.initialPage: Kirigami.ScrollablePage {
         title: i18nc("@title", "Speed Shifter")
@@ -50,7 +60,18 @@ Kirigami.ApplicationWindow {
                 }
             }
 
+            Controls.Label {
+                id: musicPath
+                Layout.alignment: Qt.AlignHCenter
+            }
 
+            Controls.Button {
+                id: myButton
+                text: i18n("Select file")
+                onClicked: {
+                    musicSelect.open()
+                }
+            }
         }
     }
 }
