@@ -62,21 +62,43 @@ Kirigami.ApplicationWindow {
                 id: speedSlider
                 Layout.alignment: Qt.AlignCenter
                 Layout.fillWidth: true
-                width: maximumWidth
                 snapMode: Controls.Dial.SnapAlways
                 value: 100
                 to: 200
-                stepSize: 4.0
+                stepSize: 2.0
                 Controls.Label {
                     Layout.alignment: Qt.AlignHCenter
                     anchors.centerIn: parent
-                    text: speedSlider.value
+                    text: (speedSlider.value > 100 ? '+' : '') + (speedSlider.value - 100) + '%'
                 }
             }
 
             Controls.Label {
                 id: musicPath
                 Layout.alignment: Qt.AlignHCenter
+            }
+
+            GridLayout {
+                Layout.alignment: Qt.AlignHCenter
+                Controls.Button {
+                    id: playButton
+                    Layout.alignment: Qt.AlignHCenter
+                    icon.name: "currenttrack_play"
+                }
+
+                Controls.Button {
+                    id: stopButton
+                    Layout.alignment: Qt.AlignHCenter
+                    icon.name: "media-playback-stop"
+                }
+            }
+
+            Controls.Slider {
+                id: playPosition
+                Layout.alignment: Qt.AlignHCenter
+                Layout.fillWidth: true
+                value: 0
+                to: 100
             }
 
             // Controls.Button {
