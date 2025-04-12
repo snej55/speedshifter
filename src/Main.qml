@@ -47,6 +47,15 @@ Kirigami.ApplicationWindow {
     pageStack.initialPage: Kirigami.ScrollablePage {
         title: i18nc("@title", "Speed Shifter")
 
+        actions: [
+            Kirigami.Action {
+                text: i18n("Open file...")
+                icon.name: "document-open"
+                shortcut: StandardKey.Open
+                onTriggered: musicSelect.open()
+            }
+        ]
+
         ColumnLayout {
             anchors.fill: parent
             Controls.Dial {
@@ -70,13 +79,13 @@ Kirigami.ApplicationWindow {
                 Layout.alignment: Qt.AlignHCenter
             }
 
-            Controls.Button {
-                id: myButton
-                text: i18n("Select file")
-                onClicked: {
-                    musicSelect.open()
-                }
-            }
+            // Controls.Button {
+            //     id: myButton
+            //     text: i18n("Select file")
+            //     onClicked: {
+            //         musicSelect.open()
+            //     }
+            // }
         }
     }
 }
