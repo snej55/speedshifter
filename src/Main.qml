@@ -30,11 +30,16 @@ Kirigami.ApplicationWindow {
         ]
     }
 
+    function basename(str)
+    {
+        return (str.slice(str.lastIndexOf("/")+1))
+    }
+
     FileDialog {
         id: musicSelect
-        currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
+        nameFilters: ["Audio file (*.mp3 *.wma *.wav *.ogg *.flac)"]
         onAccepted: {
-            musicPath.text = selectedFile
+            musicPath.text = basename(selectedFile.toString())
         }
     }
 
