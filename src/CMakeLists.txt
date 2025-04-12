@@ -8,6 +8,8 @@ ecm_add_qml_module(speedshifter
 target_sources(speedshifter
     PRIVATE
     main.cpp
+    player.h
+    player.cpp
 )
 
 ecm_target_qml_sources(speedshifter
@@ -17,6 +19,7 @@ ecm_target_qml_sources(speedshifter
 
 target_link_libraries(speedshifter
     PRIVATE
+    Qt6::Core
     Qt6::Quick
     Qt6::Qml
     Qt6::Gui

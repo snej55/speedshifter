@@ -21,7 +21,7 @@ find_package(Qt6 REQUIRED COMPONENTS
 )
 
 find_package(KF6 REQUIRED COMPONENTS
-    Kirigami
+    Kirigami2
     I18n
     CoreAddons
     QQC2DesktopStyle

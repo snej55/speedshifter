@@ -6,6 +6,8 @@ import QtQuick.Controls as Controls
 import QtQuick.Dialogs
 import org.kde.kirigami as Kirigami
 
+import org.kde.speedshifter 1.0
+
 // basic features required for kirigami application
 Kirigami.ApplicationWindow {
     // unique identifier to reference object
@@ -26,9 +28,24 @@ Kirigami.ApplicationWindow {
                 icon.name: "application-exit-symbolic"
                 shortcut: StandardKey.Quit
                 onTriggered: Qt.quit()
+            },
+
+            Kirigami.Action {
+                text: i18n("About")
+                icon.name: "help-about"
+                onTriggered: pageStack.layers.push(aboutPage)
             }
         ]
     }
+
+    Component {
+        id: aboutPage
+
+        Kirigami.AboutPage {
+            aboutData: About
+        }
+    }
+
 
     function basename(str)
     {
@@ -100,14 +117,6 @@ Kirigami.ApplicationWindow {
                 value: 0
                 to: 100
             }
-
-            // Controls.Button {
-            //     id: myButton
-            //     text: i18n("Select file")
-            //     onClicked: {
-            //         musicSelect.open()
-            //     }
-            // }
         }
     }
 }
