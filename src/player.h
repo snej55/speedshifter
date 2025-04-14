@@ -18,6 +18,12 @@ struct StreamData {
     gint current_audio; // currently playing audio stream
 
     GMainLoop* main_loop; // GLibs main loop
+
+    gboolean playing;
+    gboolean terminate;
+    gboolean seek_enabled;
+    gboolean seek_done;
+    gint64 duration;
 };
 
 enum GstPlayFlags {

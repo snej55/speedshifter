@@ -50,6 +50,12 @@ void Player::play()
     GstStateChangeReturn ret;
     gint flags;
 
+    data.playing = FALSE;
+    data.terminate = FALSE;
+    data.seek_enabled = FALSE;
+    data.seek_done = FALSE;
+    data.duration = GST_CLOCK_TIME_NONE;
+
     // create elements
     data.playbin = gst_element_factory_make("playbin", "playbin");
 
@@ -75,10 +81,6 @@ void Player::play()
     // set connection speed
     g_object_set(data.playbin, "connection-speed", 56, nullptr);
 
-    // add bus watch, so we're notified when message arrives
-    bus = gst_element_get_bus(data.playbin);
-    gst_bus_add_watch(bus, (GstBusFunc)handle_message, &data);
-
     // start playing
     ret = gst_element_set_state(data.playbin, GST_STATE_PLAYING);
     if (ret == GST_STATE_CHANGE_FAILURE) {
@@ -87,6 +89,10 @@ void Player::play()
         return;
     }
     std::cout << "Set pipeline to playing state!\n";
+
+    // add bus watch, so we're notified when message arrives
+    bus = gst_element_get_bus(data.playbin);
+    gst_bus_add_watch(bus, (GstBusFunc)handle_message, &data);
 
     data.main_loop = g_main_loop_new(nullptr, FALSE);
     g_main_loop_run(data.main_loop);
@@ -112,11 +118,48 @@ gboolean Player::handle_message(GstBus* bus, GstMessage* msg, StreamData* data)
             g_printerr("Debugging information: %s\n", debug_info ? debug_info : "none");
             g_clear_error(&err);
             g_free(debug_info);
-            g_main_loop_quit (data->main_loop);
+            data->terminate = TRUE;
+            break;
+        case GST_MESSAGE_EOS:
+            // end of stream reached
+            g_print("\nEnd of Stream reached.\n");
+            data->terminate = TRUE;
+            break;
+        case GST_MESSAGE_DURATION:
+            // duration has changed so current duration is invalid
+            data->duration = GST_CLOCK_TIME_NONE;
+            break;
+        case GST_MESSAGE_STATE_CHANGED:
+            GstState oldState, newState, pendingState;
+            gst_message_parse_state_changed(msg, &oldState, &newState, &pendingState);
+            if (GST_MESSAGE_SRC(msg) == GST_OBJECT(data->playbin)) {
+                g_print("\nPipeline state changed from %s to %s", gst_element_state_get_name(oldState), gst_element_state_get_name(newState));
+
+                data->playing = (newState == GST_STATE_PLAYING);
+
+                if (data->playing) {
+                    // check if seeking is possible
+                    GstQuery* query;
+                    gint64 start, end;
+                    query = gst_query_new_seeking(GST_FORMAT_TIME);
+                    if (gst_element_query(data->playbin, query)) {
+                        gst_query_parse_seeking(query, nullptr, &data->seek_enabled, &start, &end);
+                        if (data->seek_enabled) {
+                            g_print("Seeking is enabled from %" GST_TIME_FORMAT " to %" GST_TIME_FORMAT "\n", GST_TIME_ARGS(start), GST_TIME_ARGS(end));
+                        } else {
+                            g_print("Seeking is disabled for this stream\n");
+                        }
+                    } else {
+                        g_print("Seeking query failed.");
+                    }
+                    gst_query_unref(query);
+                }
+            }
             break;
         default:
             break;
     }
 
+    gst_message_unref(msg);
     return TRUE;
 }
