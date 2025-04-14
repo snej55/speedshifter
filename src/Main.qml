@@ -106,6 +106,9 @@ Kirigami.ApplicationWindow {
                     id: playButton
                     Layout.alignment: Qt.AlignHCenter
                     icon.name: "currenttrack_play"
+                    onClicked: {
+                        Player.play()
+                    }
                 }
 
                 Controls.Button {
