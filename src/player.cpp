@@ -92,8 +92,7 @@ void Player::play()
     g_object_set(m_data.playbin, "connection-speed", 56, nullptr);
 
     // start playing
-    GstStateChangeReturn ret{gst_element_set_state(m_data.playbin, GST_STATE_PLAYING)};
-    if (ret == GST_STATE_CHANGE_FAILURE)
+    if (gst_element_set_state(m_data.playbin, GST_STATE_PLAYING) == GST_STATE_CHANGE_FAILURE)
     {
         g_printerr("Unable to set pipeline to playing state.\n");
         gst_object_unref(m_data.playbin); // free
@@ -107,13 +106,11 @@ void Player::play()
     // main loop
     do
     {
-        GstMessage *msg;
-
         // get the message
-        msg = gst_bus_timed_pop_filtered(m_bus, 100 * GST_MSECOND,
-                                         static_cast<GstMessageType>(
-                                             GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_ERROR | GST_MESSAGE_EOS |
-                                             GST_MESSAGE_DURATION));
+        GstMessage* msg {gst_bus_timed_pop_filtered(m_bus, 100 * GST_MSECOND,
+                                                     static_cast<GstMessageType>(
+                                                         GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_ERROR | GST_MESSAGE_EOS |
+                                                         GST_MESSAGE_DURATION))};
 
         // parse the message
         if (msg != nullptr)
@@ -220,7 +217,7 @@ gboolean Player::handle_message(GstBus *bus, GstMessage *msg, StreamData *data)
     return TRUE;
 }
 
-void Player::error_callback(GstBus *bus, GstMessage *msg, StreamData *data)
+void Player::error_callback(GstBus* bus, GstMessage* msg, const StreamData* data)
 {
     GError *err;
     gchar *debug_info;
@@ -234,7 +231,7 @@ void Player::error_callback(GstBus *bus, GstMessage *msg, StreamData *data)
     gst_element_set_state(data->playbin, GST_STATE_READY);
 }
 
-void Player::eos_callback(GstBus *bus, GstMessage *msg, StreamData *data)
+void Player::eos_callback(GstBus* bus, GstMessage* msg, const StreamData* data)
 {
     g_print("End of stream reached.\n");
     gst_element_set_state(data->playbin, GST_STATE_READY);
