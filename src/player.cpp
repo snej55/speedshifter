@@ -9,6 +9,11 @@ Player::Player(QObject *parent)
 {
 }
 
+Player::~Player()
+{
+    free();
+}
+
 QString Player::filePath() const
 {
     return m_filePath;
@@ -50,12 +55,18 @@ void Player::free()
 {
     if (!m_freed)
     {
+        // free objects
+        gst_object_unref(m_bus);
+        gst_element_set_state(m_data.playbin, GST_STATE_NULL);
+        gst_object_unref(m_data.playbin);
+        std::cout << "Unreferenced objects" << std::endl;
         m_freed = true;
     }
 }
 
 void Player::play()
 {
+    m_freed = false;
     std::cout << "playing!\n";
     gint flags;
 
@@ -102,53 +113,49 @@ void Player::play()
 
     // add bus watch, so we're notified when message arrives
     m_bus = gst_element_get_bus(m_data.playbin);
+    gst_bus_add_watch(m_bus, reinterpret_cast<GstBusFunc>(handle_message), &m_data);
+    // g_signal_connect((G_OBJECT)m_bus, "message::error", reinterpret_cast<GCallback>(error_callback), &m_data);
 
     // main loop
-    do
-    {
-        // get the message
-        GstMessage* msg {gst_bus_timed_pop_filtered(m_bus, 100 * GST_MSECOND,
-                                                     static_cast<GstMessageType>(
-                                                         GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_ERROR | GST_MESSAGE_EOS |
-                                                         GST_MESSAGE_DURATION))};
-
-        // parse the message
-        if (msg != nullptr)
-        {
-            handle_message(m_bus, msg, &m_data);
-        } else
-        {
-            // no message, so timeout expired
-            if (m_data.playing)
-            {
-                gint64 current{-1};
-
-                // query current position
-                if (!gst_element_query_position(m_data.playbin, GST_FORMAT_TIME, &current))
-                {
-                    g_printerr("Could not query current position.\n");
-                }
-
-                // if it's unknown query stream duration
-                if (!GST_CLOCK_TIME_IS_VALID(m_data.duration))
-                {
-                    if (!gst_element_query_duration(m_data.playbin, GST_FORMAT_TIME, &m_data.duration))
-                    {
-                        g_printerr("Could not query duration.\n");
-                    }
-                }
-
-                g_print("Position %" GST_TIME_FORMAT " / %" GST_TIME_FORMAT "\r", GST_TIME_ARGS(current),
-                        GST_TIME_ARGS(m_data.duration));
-            }
-        }
-    } while (!m_data.terminate);
-
-    // free objects
-    gst_object_unref(m_bus);
-    gst_element_set_state(m_data.playbin, GST_STATE_NULL);
-    gst_object_unref(m_data.playbin);
-    std::cout << "Unreferenced objects" << std::endl;
+    // do
+    // {
+    //     // get the message
+    //     GstMessage* msg {gst_bus_timed_pop_filtered(m_bus, 100 * GST_MSECOND,
+    //                                                  static_cast<GstMessageType>(
+    //                                                      GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_ERROR | GST_MESSAGE_EOS |
+    //                                                      GST_MESSAGE_DURATION))};
+    //
+    //     // parse the message
+    //     if (msg != nullptr)
+    //     {
+    //         handle_message(m_bus, msg, &m_data);
+    //     } else
+    //     {
+    //         // no message, so timeout expired
+    //         if (m_data.playing)
+    //         {
+    //             gint64 current{-1};
+    //
+    //             // query current position
+    //             if (!gst_element_query_position(m_data.playbin, GST_FORMAT_TIME, &current))
+    //             {
+    //                 g_printerr("Could not query current position.\n");
+    //             }
+    //
+    //             // if it's unknown query stream duration
+    //             if (!GST_CLOCK_TIME_IS_VALID(m_data.duration))
+    //             {
+    //                 if (!gst_element_query_duration(m_data.playbin, GST_FORMAT_TIME, &m_data.duration))
+    //                 {
+    //                     g_printerr("Could not query duration.\n");
+    //                 }
+    //             }
+    //
+    //             g_print("Position %" GST_TIME_FORMAT " / %" GST_TIME_FORMAT "\r", GST_TIME_ARGS(current),
+    //                     GST_TIME_ARGS(m_data.duration));
+    //         }
+    //     }
+    // } while (!m_data.terminate);
 }
 
 gboolean Player::handle_message(GstBus *bus, GstMessage *msg, StreamData *data)
@@ -180,7 +187,7 @@ gboolean Player::handle_message(GstBus *bus, GstMessage *msg, StreamData *data)
             gst_message_parse_state_changed(msg, &oldState, &newState, &pendingState);
             if (GST_MESSAGE_SRC(msg) == GST_OBJECT(data->playbin))
             {
-                g_print("\nPipeline state changed from %s to %s", gst_element_state_get_name(oldState),
+                g_print("\nPipeline state changed from %s to %s \n", gst_element_state_get_name(oldState),
                         gst_element_state_get_name(newState));
 
                 data->playing = (newState == GST_STATE_PLAYING);
@@ -244,7 +251,7 @@ void Player::state_changed_callback(GstBus *bus, GstMessage *msg, StreamData *da
     if (GST_MESSAGE_SRC(msg) == GST_OBJECT(data->playbin))
     {
         data->state = newState;
-        g_print("\nPipeline state changed from %s to %s", gst_element_state_get_name(oldState),
+        g_print("\nPipeline state changed from %s to %s \n", gst_element_state_get_name(oldState),
                 gst_element_state_get_name(newState));
 
         if (oldState == GST_STATE_READY && newState == GST_STATE_PAUSED)
@@ -290,6 +297,7 @@ void Player::setDuration(const int &val)
     if (val != m_duration)
     {
         m_duration = val;
+        Q_EMIT durationChanged();
     }
 }
 
@@ -303,6 +311,7 @@ void Player::setTimeElapsed(const int &val)
     if (val != m_timeElapsed)
     {
         m_timeElapsed = val;
+        Q_EMIT timeElapsedChanged();
     }
 }
 
@@ -310,3 +319,4 @@ int Player::getTimeElapsed() const
 {
     return m_timeElapsed;
 }
+

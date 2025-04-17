@@ -39,16 +39,25 @@ class Player : public QObject
     Q_OBJECT
     Q_PROPERTY(QString filePath READ filePath WRITE setFilePath NOTIFY filePathChanged)
     Q_PROPERTY(float playbackSpeed READ playbackSpeed WRITE setPlaybackSpeed NOTIFY playbackSpeedChanged)
+    Q_PROPERTY(int duration READ getDuration WRITE setDuration NOTIFY durationChanged)
+    Q_PROPERTY(int timeElapsed READ getTimeElapsed WRITE setTimeElapsed NOTIFY timeElapsedChanged)
     QML_ELEMENT
 
 public:
     explicit Player(QObject* parent = nullptr);
+    ~Player();
 
     void init(int argc, char* argv[]);
     void free();
 
     Q_INVOKABLE
     void play();
+
+    // Q_INVOKABLE
+    // void pause();
+    //
+    // Q_INVOKABLE
+    // void stop();
 
     [[nodiscard]] QString filePath() const;
     void setFilePath(const QString& val);
@@ -67,6 +76,8 @@ public:
 Q_SIGNALS:
     void filePathChanged();
     void playbackSpeedChanged();
+    void durationChanged();
+    void timeElapsedChanged();
 
 private:
     QString m_filePath;
