@@ -7,8 +7,8 @@
 
 #include <qqml.h>
 #include <QtQml/qqmlregistration.h>
-
-#include <gst/gst.h> // gstreamer
+// gstreamer
+#include <gst/gst.h>
 
 // for gstreamer playback
 struct StreamData {
@@ -26,6 +26,7 @@ struct StreamData {
     gint64 duration;
 
     GstState state;
+    void* player;
 };
 
 enum GstPlayFlags {
@@ -53,8 +54,16 @@ public:
     QString filePath() const;
     void setFilePath(const QString& val);
 
+    // seconds
     float playbackSpeed() const;
     void setPlaybackSpeed(const float& val);
+
+    // getters & setters
+    void setDuration(const int& val);
+    int getDuration() const;
+
+    void setTimeElapsed(const int& val);
+    int getTimeElapsed() const;
 
 Q_SIGNALS:
     void filePathChanged();
@@ -67,15 +76,18 @@ private:
     bool m_initialized{false};
     bool m_freed{false};
 
+    int m_timeElapsed{0}; // seconds
+    int m_duration{0}; // in seconds
+
     // gstreamer stuff
     StreamData m_data;
     GstBus* m_bus;
 
     static void error_callback(GstBus* bus, GstMessage* msg, StreamData* data);
     static void eos_callback(GstBus* bus, GstMessage* msg, StreamData* data); // end of stream
-    static void state_changed_callback(GstBus* bus, GstMessage* msg, StreamData* data, Player* player);
+    static void state_changed_callback(GstBus* bus, GstMessage* msg, StreamData* data);
     static gboolean handle_message(GstBus* bus, GstMessage* msg, StreamData* data);
 
-    static void update_player(StreamData* data, Player* player);
+    static void update_player(StreamData* data);
 };
 #endif

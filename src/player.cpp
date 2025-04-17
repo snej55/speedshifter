@@ -56,6 +56,7 @@ void Player::play()
     data.seek_enabled = FALSE;
     data.seek_done = FALSE;
     data.duration = GST_CLOCK_TIME_NONE;
+    data.player = this;
 
     // create elements
     data.playbin = gst_element_factory_make("playbin", "playbin");
@@ -126,6 +127,7 @@ void Player::play()
         }
     } while (!data.terminate);
 
+    // unreference objects
     gst_object_unref(bus);
     gst_element_set_state(data.playbin, GST_STATE_NULL);
     gst_object_unref(data.playbin);
@@ -209,7 +211,7 @@ void Player::eos_callback(GstBus* bus, GstMessage* msg, StreamData* data) {
     gst_element_set_state(data->playbin, GST_STATE_READY);
 }
 
-void Player::state_changed_callback(GstBus* bus, GstMessage* msg, StreamData* data, Player* player) {
+void Player::state_changed_callback(GstBus* bus, GstMessage* msg, StreamData* data) {
     GstState oldState, newState, pendingState;
     gst_message_parse_state_changed(msg, &oldState, &newState, &pendingState);
     if (GST_MESSAGE_SRC(msg) == GST_OBJECT(data->playbin)) {
@@ -217,12 +219,12 @@ void Player::state_changed_callback(GstBus* bus, GstMessage* msg, StreamData* da
         g_print("\nPipeline state changed from %s to %s", gst_element_state_get_name(oldState), gst_element_state_get_name(newState));
 
         if (oldState == GST_STATE_READY && newState == GST_STATE_PAUSED) {
-            update_player(data, player);
+            update_player(data);
         }
     }
 }
 
-void Player::update_player(StreamData* data, Player* player) {
+void Player::update_player(StreamData* data) {
     gint64 current {-1};
 
     // we don't want to update unless state is PLAYING or PAUSED
@@ -243,4 +245,30 @@ void Player::update_player(StreamData* data, Player* player) {
     }
 
     g_print("Position %" GST_TIME_FORMAT " / %" GST_TIME_FORMAT "\r", GST_TIME_ARGS(current), GST_TIME_ARGS(data->duration));
+}
+
+// --------------------------- getters & setters --------------------------- //
+
+void Player::setDuration(const int& val)
+{
+    if (val != m_duration) {
+        m_duration = val;
+    }
+}
+
+int Player::getDuration() const
+{
+    return m_duration;
+}
+
+void Player::setTimeElapsed(const int& val)
+{
+    if (val != m_timeElapsed) {
+        m_timeElapsed = val;
+    }
+}
+
+int Player::getTimeElapsed() const
+{
+    return m_timeElapsed;
 }
