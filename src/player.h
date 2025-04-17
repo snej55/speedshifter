@@ -51,19 +51,19 @@ public:
     Q_INVOKABLE
     void play();
 
-    QString filePath() const;
+    [[nodiscard]] QString filePath() const;
     void setFilePath(const QString& val);
 
     // seconds
-    float playbackSpeed() const;
+    [[nodiscard]] float playbackSpeed() const;
     void setPlaybackSpeed(const float& val);
 
     // getters & setters
     void setDuration(const int& val);
-    int getDuration() const;
+    [[nodiscard]] int getDuration() const;
 
     void setTimeElapsed(const int& val);
-    int getTimeElapsed() const;
+    [[nodiscard]] int getTimeElapsed() const;
 
 Q_SIGNALS:
     void filePathChanged();
@@ -80,8 +80,8 @@ private:
     int m_duration{0}; // in seconds
 
     // gstreamer stuff
-    StreamData m_data;
-    GstBus* m_bus;
+    StreamData m_data{};
+    GstBus* m_bus{nullptr};
 
     static void error_callback(GstBus* bus, GstMessage* msg, StreamData* data);
     static void eos_callback(GstBus* bus, GstMessage* msg, StreamData* data); // end of stream
