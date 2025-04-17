@@ -86,7 +86,7 @@ void Player::play()
     ret = gst_element_set_state(data.playbin, GST_STATE_PLAYING);
     if (ret == GST_STATE_CHANGE_FAILURE) {
         g_printerr("Unable to set pipeline to playing state.\n");
-        std::cout << "Unable to change gst pipeline state!" << std::endl;
+        gst_object_unref(data.playbin); // free
         return;
     }
     std::cout << "Set pipeline to playing state!\n";
@@ -120,6 +120,8 @@ void Player::play()
                         g_printerr("Could not query duration.\n");
                     }
                 }
+
+                g_print("Position %" GST_TIME_FORMAT " / %" GST_TIME_FORMAT "\r", GST_TIME_ARGS(current), GST_TIME_ARGS(data.duration));
             }
         }
     } while (!data.terminate);
@@ -187,4 +189,58 @@ gboolean Player::handle_message(GstBus* bus, GstMessage* msg, StreamData* data)
 
     gst_message_unref(msg);
     return TRUE;
+}
+
+void Player::error_callback(GstBus* bus, GstMessage* msg, StreamData* data) {
+    GError* err;
+    gchar* debug_info;
+
+    gst_message_parse_error(msg, &err, &debug_info);
+    g_printerr("Error recieved from element %s: %s\n", GST_OBJECT_NAME(msg->src), err->message);
+    g_printerr("Debugging information: %s\n", debug_info ? debug_info : "none");
+    g_clear_error(&err);
+    g_free(debug_info);
+
+    gst_element_set_state(data->playbin, GST_STATE_READY);
+}
+
+void Player::eos_callback(GstBus* bus, GstMessage* msg, StreamData* data) {
+    g_print("End of stream reached.\n");
+    gst_element_set_state(data->playbin, GST_STATE_READY);
+}
+
+void Player::state_changed_callback(GstBus* bus, GstMessage* msg, StreamData* data, Player* player) {
+    GstState oldState, newState, pendingState;
+    gst_message_parse_state_changed(msg, &oldState, &newState, &pendingState);
+    if (GST_MESSAGE_SRC(msg) == GST_OBJECT(data->playbin)) {
+        data->state = newState;
+        g_print("\nPipeline state changed from %s to %s", gst_element_state_get_name(oldState), gst_element_state_get_name(newState));
+
+        if (oldState == GST_STATE_READY && newState == GST_STATE_PAUSED) {
+            update_player(data, player);
+        }
+    }
+}
+
+void Player::update_player(StreamData* data, Player* player) {
+    gint64 current {-1};
+
+    // we don't want to update unless state is PLAYING or PAUSED
+    if (data->state < GST_STATE_PAUSED) {
+        return;
+    }
+
+    // query current position
+    if (!gst_element_query_position(data->playbin, GST_FORMAT_TIME, &current)) {
+        g_printerr("Could not query current position.\n");
+    }
+
+    // if it's unknown query stream duration
+    if (!GST_CLOCK_TIME_IS_VALID(data->duration)) {
+        if (!gst_element_query_duration(data->playbin, GST_FORMAT_TIME, &data->duration)) {
+            g_printerr("Could not query duration.\n");
+        }
+    }
+
+    g_print("Position %" GST_TIME_FORMAT " / %" GST_TIME_FORMAT "\r", GST_TIME_ARGS(current), GST_TIME_ARGS(data->duration));
 }

@@ -24,6 +24,8 @@ struct StreamData {
     gboolean seek_enabled;
     gboolean seek_done;
     gint64 duration;
+
+    GstState state;
 };
 
 enum GstPlayFlags {
@@ -69,6 +71,11 @@ private:
     StreamData m_data;
     GstBus* m_bus;
 
+    static void error_callback(GstBus* bus, GstMessage* msg, StreamData* data);
+    static void eos_callback(GstBus* bus, GstMessage* msg, StreamData* data); // end of stream
+    static void state_changed_callback(GstBus* bus, GstMessage* msg, StreamData* data, Player* player);
     static gboolean handle_message(GstBus* bus, GstMessage* msg, StreamData* data);
+
+    static void update_player(StreamData* data, Player* player);
 };
 #endif
