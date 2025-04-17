@@ -1,16 +1,17 @@
-#include <QApplication>
-#include <QQmlApplicationEngine>
-#include <QtQml>
-#include <QUrl>
-#include <QQuickStyle>
+#include <KAboutData>
+#include <KIconTheme>
 #include <KLocalizedContext>
 #include <KLocalizedString>
-#include <KIconTheme>
-#include <KAboutData>
+#include <QApplication>
+#include <QQmlApplicationEngine>
+#include <QQuickStyle>
+#include <QUrl>
+#include <QtQml>
 
 #include "player.h"
 
-void registerPlayer(Player& player) {
+void registerPlayer(Player& player)
+{
     qmlRegisterSingletonInstance<Player>("org.kde.speedshifter", 1, 0, "Player", &player);
 }
 
@@ -24,8 +25,7 @@ int main(int argc, char* argv[])
     QApplication::setDesktopFileName(QStringLiteral("org.kde.speedshifter.desktop"));
 
     QApplication::setStyle(QStringLiteral("breeze"));
-    if (qEnvironmentVariableIsEmpty("QT_QUICK_CONTROLS_STYLE"))
-    {
+    if (qEnvironmentVariableIsEmpty("QT_QUICK_CONTROLS_STYLE")) {
         QQuickStyle::setStyle(QStringLiteral("org.kde.desktop"));
     }
 
@@ -42,8 +42,7 @@ int main(int argc, char* argv[])
         i18nc("@info:credit", "Jens Kromdijk"),
         i18nc("@info:credit", "Developer"),
         QStringLiteral("snej55.dev@gmail.com"),
-        QStringLiteral("https://github.com/snej55")
-    );
+        QStringLiteral("https://github.com/snej55"));
 
     // set about data as information
     KAboutData::setApplicationData(aboutData);
@@ -54,8 +53,7 @@ int main(int argc, char* argv[])
         "About",
         [](QQmlEngine* engine, QJSEngine*) -> QJSValue {
             return engine->toScriptValue(KAboutData::applicationData());
-        }
-    );
+        });
 
     QQmlApplicationEngine engine;
 
@@ -67,8 +65,7 @@ int main(int argc, char* argv[])
     engine.rootContext()->setContextObject(new KLocalizedContext(&engine));
     engine.loadFromModule("org.kde.speedshifter", "Main");
 
-    if (engine.rootObjects().isEmpty())
-    {
+    if (engine.rootObjects().isEmpty()) {
         return -1;
     }
 

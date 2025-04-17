@@ -65,6 +65,10 @@ private:
     bool m_initialized{false};
     bool m_freed{false};
 
+    // gstreamer stuff
+    StreamData m_data;
+    GstBus* m_bus;
+
     static gboolean handle_message(GstBus* bus, GstMessage* msg, StreamData* data);
 };
 #endif

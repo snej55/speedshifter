@@ -2,6 +2,7 @@
 
 #include <string>
 #include <iostream>
+#include <cmath>
 
 Player::Player(QObject* parent)
  : QObject{parent}
@@ -29,7 +30,7 @@ float Player::playbackSpeed() const
 void Player::setPlaybackSpeed(const float& val)
 {
     if (val != m_playBackSpeed) {
-        m_playBackSpeed = val;
+        m_playBackSpeed = std::max(0.0f, std::min(2.0f, val));
         Q_EMIT playbackSpeedChanged();
     }
 }
@@ -92,13 +93,37 @@ void Player::play()
 
     // add bus watch, so we're notified when message arrives
     bus = gst_element_get_bus(data.playbin);
-    gst_bus_add_watch(bus, (GstBusFunc)handle_message, &data);
 
-    data.main_loop = g_main_loop_new(nullptr, FALSE);
-    g_main_loop_run(data.main_loop);
-    std::cout << "Created main loop!\n";
+    // main loop
+    do {
+        GstMessage* msg;
 
-    g_main_loop_unref(data.main_loop);
+        // get the message
+        msg = gst_bus_timed_pop_filtered(bus, 100 * GST_MSECOND, static_cast<GstMessageType>(GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_ERROR | GST_MESSAGE_EOS | GST_MESSAGE_DURATION));
+
+        // parse the message
+        if (msg != nullptr) {
+            handle_message(bus, msg, &data);
+        } else {
+            // no message, so timeout expired
+            if (data.playing) {
+                gint64 current {-1};
+
+                // query current position
+                if (!gst_element_query_position(data.playbin, GST_FORMAT_TIME, &current)) {
+                    g_printerr("Could not query current position.\n");
+                }
+
+                // if it's unknown query stream duration
+                if (!GST_CLOCK_TIME_IS_VALID(data.duration)) {
+                    if (!gst_element_query_duration(data.playbin, GST_FORMAT_TIME, &data.duration)) {
+                        g_printerr("Could not query duration.\n");
+                    }
+                }
+            }
+        }
+    } while (!data.terminate);
+
     gst_object_unref(bus);
     gst_element_set_state(data.playbin, GST_STATE_NULL);
     gst_object_unref(data.playbin);
