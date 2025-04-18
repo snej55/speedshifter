@@ -4,6 +4,8 @@
 #include <iostream>
 #include <cmath>
 
+#include <QFile>
+
 Player::Player(QObject *parent)
     : QObject{parent}
 {
@@ -24,6 +26,9 @@ void Player::setFilePath(const QString &val)
     if (val != m_filePath)
     {
         m_filePath = val;
+        std::cout << "File path changed!\n";
+        std::cout << "Loading!\n";
+        load();
         Q_EMIT filePathChanged();
     }
 }
@@ -62,13 +67,17 @@ void Player::free()
         m_data = StreamData{};
         m_bus = nullptr;
         std::cout << "Unreferenced objects" << std::endl;
+        m_loaded = false;
         m_freed = true;
     }
 }
 
-void Player::play()
+void Player::load()
 {
-    std::cout << "playing!\n";
+    std::cout << "loading!\n";
+    m_loaded = false;
+    m_playing = false;
+
     gint flags;
 
     m_data = StreamData{};
@@ -104,21 +113,13 @@ void Player::play()
     // set connection speed
     g_object_set(m_data.playbin, "connection-speed", 56, nullptr);
 
-    // start playing
-    if (gst_element_set_state(m_data.playbin, GST_STATE_PLAYING) == GST_STATE_CHANGE_FAILURE)
-    {
-        g_printerr("Unable to set pipeline to playing state.\n");
-        gst_object_unref(m_data.playbin); // free
-        return;
-    }
-    std::cout << "Set pipeline to playing state!\n";
-
     // add bus watch, so we're notified when message arrives
     m_bus = gst_element_get_bus(m_data.playbin);
     gst_bus_add_watch(m_bus, reinterpret_cast<GstBusFunc>(handle_message), &m_data);
 
     std::cout << "Added bus watch!\n";
 
+    m_loaded = true;
     m_freed = false;
 }
 
@@ -216,6 +217,52 @@ void Player::update_player(StreamData *data)
 
     g_print("Position %" GST_TIME_FORMAT " / %" GST_TIME_FORMAT "\r", GST_TIME_ARGS(current),
             GST_TIME_ARGS(data->duration));
+}
+
+void Player::play()
+{
+    if (m_loaded)
+    {
+        // start playing
+        if (gst_element_set_state(m_data.playbin, GST_STATE_PLAYING) == GST_STATE_CHANGE_FAILURE)
+        {
+            g_printerr("Unable to set pipeline to playing state.\n");
+            gst_object_unref(m_data.playbin); // free
+            return;
+        }
+        m_playing = true;
+        std::cout << "Set pipeline to playing state!\n";
+    }
+}
+
+void Player::pause()
+{
+    if (m_loaded)
+    {
+        if (gst_element_set_state(m_data.playbin, GST_STATE_PAUSED) == GST_STATE_CHANGE_FAILURE)
+        {
+            g_printerr("Failed to set playbin to playing state.\n");
+            gst_object_unref(m_data.playbin); // free
+            return;
+        }
+        m_playing = false;
+        std::cout << "Paused pipeline.\n";
+    }
+}
+
+void Player::stop()
+{
+    if (m_loaded)
+    {
+        if (gst_element_set_state(m_data.playbin, GST_STATE_READY) == GST_STATE_CHANGE_FAILURE)
+        {
+            g_printerr("Failed to set playbin to ready state.\n");
+            gst_object_unref(m_data.playbin); // free
+            return;
+        }
+        m_playing = false;
+        std::cout << "Set playbin to ready state\n";
+    }
 }
 
 // --------------------------- getters & setters --------------------------- //

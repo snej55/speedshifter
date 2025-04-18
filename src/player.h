@@ -50,14 +50,16 @@ public:
     void init(int argc, char* argv[]);
     void free();
 
+    void load();
+
     Q_INVOKABLE
     void play();
 
-    // Q_INVOKABLE
-    // void pause();
-    //
-    // Q_INVOKABLE
-    // void stop();
+    Q_INVOKABLE
+    void pause();
+
+    Q_INVOKABLE
+    void stop();
 
     [[nodiscard]] QString filePath() const;
     void setFilePath(const QString& val);
@@ -85,6 +87,9 @@ private:
 
     bool m_initialized{false};
     bool m_freed{false};
+
+    bool m_playing{false};
+    bool m_loaded{false};
 
     int m_timeElapsed{0}; // seconds
     int m_duration{0}; // in seconds
