@@ -10,6 +10,8 @@ target_sources(speedshifter
     main.cpp
     player.h
     player.cpp
+    timer.h
+    timer.cpp
 )
 
 ecm_target_qml_sources(speedshifter

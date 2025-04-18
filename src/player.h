@@ -9,6 +9,8 @@
 // gstreamer
 #include <gst/gst.h>
 
+#include "timer.h"
+
 // for gstreamer playback
 struct StreamData {
     GstElement* playbin;
