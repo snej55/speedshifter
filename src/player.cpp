@@ -146,6 +146,11 @@ gboolean Player::handle_message(GstBus *bus, GstMessage *msg, StreamData *data)
         case GST_MESSAGE_EOS:
             // end of stream reached
             g_print("\nEnd of Stream reached.\n");
+            Player* player;
+            player = static_cast<Player*>(data->player);
+            player->setTimeElapsed(0);
+            player->setPlaying(false);
+            data->playing = false;
             data->terminate = TRUE;
             break;
         case GST_MESSAGE_DURATION:
