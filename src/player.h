@@ -108,6 +108,9 @@ private:
     int m_duration{0}; // in seconds
 
     bool m_seekingEnabled{true};
+    int m_targetSeek{0}; // seek buffer
+
+    Timer* m_Timer{nullptr};
 
     // gstreamer stuff
     StreamData m_data{};
