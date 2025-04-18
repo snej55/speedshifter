@@ -120,48 +120,6 @@ void Player::play()
     std::cout << "Added bus watch!\n";
 
     m_freed = false;
-    // g_signal_connect((G_OBJECT)m_bus, "message::error", reinterpret_cast<GCallback>(error_callback), &m_data);
-
-    // main loop
-    // do
-    // {
-    //     // get the message
-    //     GstMessage* msg {gst_bus_timed_pop_filtered(m_bus, 100 * GST_MSECOND,
-    //                                                  static_cast<GstMessageType>(
-    //                                                      GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_ERROR | GST_MESSAGE_EOS |
-    //                                                      GST_MESSAGE_DURATION))};
-    //
-    //     // parse the message
-    //     if (msg != nullptr)
-    //     {
-    //         handle_message(m_bus, msg, &m_data);
-    //     } else
-    //     {
-    //         // no message, so timeout expired
-    //         if (m_data.playing)
-    //         {
-    //             gint64 current{-1};
-    //
-    //             // query current position
-    //             if (!gst_element_query_position(m_data.playbin, GST_FORMAT_TIME, &current))
-    //             {
-    //                 g_printerr("Could not query current position.\n");
-    //             }
-    //
-    //             // if it's unknown query stream duration
-    //             if (!GST_CLOCK_TIME_IS_VALID(m_data.duration))
-    //             {
-    //                 if (!gst_element_query_duration(m_data.playbin, GST_FORMAT_TIME, &m_data.duration))
-    //                 {
-    //                     g_printerr("Could not query duration.\n");
-    //                 }
-    //             }
-    //
-    //             g_print("Position %" GST_TIME_FORMAT " / %" GST_TIME_FORMAT "\r", GST_TIME_ARGS(current),
-    //                     GST_TIME_ARGS(m_data.duration));
-    //         }
-    //     }
-    // } while (!m_data.terminate);
 }
 
 gboolean Player::handle_message(GstBus *bus, GstMessage *msg, StreamData *data)
@@ -227,44 +185,8 @@ gboolean Player::handle_message(GstBus *bus, GstMessage *msg, StreamData *data)
         default:
             break;
     }
+    // NOTE: don't unref msg, it gives the corrupted smallbin error
     return TRUE;
-}
-
-void Player::error_callback(GstBus* bus, GstMessage* msg, const StreamData* data)
-{
-    GError *err;
-    gchar *debug_info;
-
-    gst_message_parse_error(msg, &err, &debug_info);
-    g_printerr("Error recieved from element %s: %s\n", GST_OBJECT_NAME(msg->src), err->message);
-    g_printerr("Debugging information: %s\n", debug_info ? debug_info : "none");
-    g_clear_error(&err);
-    g_free(debug_info);
-
-    gst_element_set_state(data->playbin, GST_STATE_READY);
-}
-
-void Player::eos_callback(GstBus* bus, GstMessage* msg, const StreamData* data)
-{
-    g_print("End of stream reached.\n");
-    gst_element_set_state(data->playbin, GST_STATE_READY);
-}
-
-void Player::state_changed_callback(GstBus *bus, GstMessage *msg, StreamData *data)
-{
-    GstState oldState, newState, pendingState;
-    gst_message_parse_state_changed(msg, &oldState, &newState, &pendingState);
-    if (GST_MESSAGE_SRC(msg) == GST_OBJECT(data->playbin))
-    {
-        data->state = newState;
-        g_print("\nPipeline state changed from %s to %s \n", gst_element_state_get_name(oldState),
-                gst_element_state_get_name(newState));
-
-        if (oldState == GST_STATE_READY && newState == GST_STATE_PAUSED)
-        {
-            update_player(data);
-        }
-    }
 }
 
 void Player::update_player(StreamData *data)
@@ -325,4 +247,3 @@ int Player::getTimeElapsed() const
 {
     return m_timeElapsed;
 }
-

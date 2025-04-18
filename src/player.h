@@ -93,9 +93,9 @@ private:
     StreamData m_data{};
     GstBus* m_bus{nullptr};
 
-    static void error_callback(GstBus* bus, GstMessage* msg, const StreamData* data);
-    static void eos_callback(GstBus* bus, GstMessage* msg, const StreamData* data); // end of stream
-    static void state_changed_callback(GstBus* bus, GstMessage* msg, StreamData* data);
+    // static void error_callback(GstBus* bus, GstMessage* msg, const StreamData* data);
+    // static void eos_callback(GstBus* bus, GstMessage* msg, const StreamData* data);
+    // static void state_changed_callback(GstBus* bus, GstMessage* msg, StreamData* data);
     static gboolean handle_message(GstBus* bus, GstMessage* msg, StreamData* data);
 
     static void update_player(StreamData* data);
