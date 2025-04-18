@@ -59,6 +59,8 @@ void Player::free()
         gst_object_unref(m_bus);
         gst_element_set_state(m_data.playbin, GST_STATE_NULL);
         gst_object_unref(m_data.playbin);
+        m_data = StreamData{};
+        m_bus = nullptr;
         std::cout << "Unreferenced objects" << std::endl;
         m_freed = true;
     }
@@ -66,10 +68,10 @@ void Player::free()
 
 void Player::play()
 {
-    m_freed = false;
     std::cout << "playing!\n";
     gint flags;
 
+    m_data = StreamData{};
     m_data.playing = FALSE;
     m_data.terminate = FALSE;
     m_data.seek_enabled = FALSE;
@@ -114,6 +116,10 @@ void Player::play()
     // add bus watch, so we're notified when message arrives
     m_bus = gst_element_get_bus(m_data.playbin);
     gst_bus_add_watch(m_bus, reinterpret_cast<GstBusFunc>(handle_message), &m_data);
+
+    std::cout << "Added bus watch!\n";
+
+    m_freed = false;
     // g_signal_connect((G_OBJECT)m_bus, "message::error", reinterpret_cast<GCallback>(error_callback), &m_data);
 
     // main loop
@@ -192,8 +198,10 @@ gboolean Player::handle_message(GstBus *bus, GstMessage *msg, StreamData *data)
 
                 data->playing = (newState == GST_STATE_PLAYING);
 
+                std::cout << "Playing: " << (data->playing ? "true" : "false") << '\n';
                 if (data->playing)
                 {
+                    std::cout << "Querying seeking enabled\n";
                     // check if seeking is possible
                     gint64 start, end;
                     GstQuery *query{gst_query_new_seeking(GST_FORMAT_TIME)};
@@ -219,8 +227,6 @@ gboolean Player::handle_message(GstBus *bus, GstMessage *msg, StreamData *data)
         default:
             break;
     }
-
-    gst_message_unref(msg);
     return TRUE;
 }
 
