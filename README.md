@@ -9,6 +9,9 @@ A practice tool for musicians to slow down audio tracks whilst maintaining corre
 - [X] Add seeking
 - [ ] Add buffer for seeking
 - [ ] Add scaletempo
-- [ ] Make website
+- [ ] Add screenshots
+- [ ] Make website + download page
 - [ ] Make promo video
+- [ ] Scale dial properly
 - [ ] Add vfx
+- [ ] Make crossplatorm ports (Windows -> Mac -> Android -> iOS)
