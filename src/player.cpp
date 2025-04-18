@@ -126,8 +126,8 @@ void Player::load()
     m_loaded = true;
     m_freed = false;
 
-    // add timeout to update player data
-    g_timeout_add_seconds(1, reinterpret_cast<GSourceFunc>(update_player), &m_data);
+    // add timeout to update player data every 50 milliseconds
+    g_timeout_add(50, reinterpret_cast<GSourceFunc>(update_player), &m_data);
 }
 
 gboolean Player::handle_message(GstBus *bus, GstMessage *msg, StreamData *data)
