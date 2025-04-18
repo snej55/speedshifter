@@ -105,9 +105,12 @@ Kirigami.ApplicationWindow {
                 Controls.Button {
                     id: playButton
                     Layout.alignment: Qt.AlignHCenter
-                    icon.name: "currenttrack_play"
+                    icon.name: Player.playing ? "media-playback-pause" : "media-playback-start"
                     onClicked: {
-                        Player.play()
+                        if (Player.playing)
+                            Player.pause()
+                        else
+                            Player.play()
                     }
                 }
 

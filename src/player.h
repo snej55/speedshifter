@@ -41,6 +41,7 @@ class Player : public QObject
     Q_PROPERTY(float playbackSpeed READ playbackSpeed WRITE setPlaybackSpeed NOTIFY playbackSpeedChanged)
     Q_PROPERTY(int duration READ getDuration WRITE setDuration NOTIFY durationChanged)
     Q_PROPERTY(int timeElapsed READ getTimeElapsed WRITE setTimeElapsed NOTIFY timeElapsedChanged)
+    Q_PROPERTY(bool playing READ getPlaying NOTIFY playingChanged)
     QML_ELEMENT
 
 public:
@@ -75,11 +76,15 @@ public:
     void setTimeElapsed(const int& val);
     [[nodiscard]] int getTimeElapsed() const;
 
+    void setPlaying(const bool& val);
+    [[nodiscard]] bool getPlaying() const;
+
 Q_SIGNALS:
     void filePathChanged();
     void playbackSpeedChanged();
     void durationChanged();
     void timeElapsedChanged();
+    void playingChanged();
 
 private:
     QString m_filePath;
@@ -103,6 +108,6 @@ private:
     // static void state_changed_callback(GstBus* bus, GstMessage* msg, StreamData* data);
     static gboolean handle_message(GstBus* bus, GstMessage* msg, StreamData* data);
 
-    static void update_player(StreamData* data);
+    static gboolean update_player(StreamData* data);
 };
 #endif

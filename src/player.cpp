@@ -76,7 +76,9 @@ void Player::load()
 {
     std::cout << "loading!\n";
     m_loaded = false;
-    m_playing = false;
+    setPlaying(false);
+
+    free();
 
     gint flags;
 
@@ -190,14 +192,15 @@ gboolean Player::handle_message(GstBus *bus, GstMessage *msg, StreamData *data)
     return TRUE;
 }
 
-void Player::update_player(StreamData *data)
+gboolean Player::update_player(StreamData *data)
 {
     gint64 current{-1};
+    static_cast<Player*>(data->player)->setPlaying(data->playing);
 
     // we don't want to update unless state is PLAYING or PAUSED
     if (data->state < GST_STATE_PAUSED)
     {
-        return;
+        return TRUE;
     }
 
     // query current position
@@ -217,6 +220,8 @@ void Player::update_player(StreamData *data)
 
     g_print("Position %" GST_TIME_FORMAT " / %" GST_TIME_FORMAT "\r", GST_TIME_ARGS(current),
             GST_TIME_ARGS(data->duration));
+
+    return TRUE;
 }
 
 void Player::play()
@@ -230,7 +235,7 @@ void Player::play()
             gst_object_unref(m_data.playbin); // free
             return;
         }
-        m_playing = true;
+        setPlaying(true);
         std::cout << "Set pipeline to playing state!\n";
     }
 }
@@ -245,7 +250,7 @@ void Player::pause()
             gst_object_unref(m_data.playbin); // free
             return;
         }
-        m_playing = false;
+        setPlaying(false);
         std::cout << "Paused pipeline.\n";
     }
 }
@@ -260,14 +265,14 @@ void Player::stop()
             gst_object_unref(m_data.playbin); // free
             return;
         }
-        m_playing = false;
+        setPlaying(false);
         std::cout << "Set playbin to ready state\n";
     }
 }
 
 // --------------------------- getters & setters --------------------------- //
 
-void Player::setDuration(const int &val)
+void Player::setDuration(const int& val)
 {
     if (val != m_duration)
     {
@@ -281,7 +286,7 @@ int Player::getDuration() const
     return m_duration;
 }
 
-void Player::setTimeElapsed(const int &val)
+void Player::setTimeElapsed(const int& val)
 {
     if (val != m_timeElapsed)
     {
@@ -293,4 +298,19 @@ void Player::setTimeElapsed(const int &val)
 int Player::getTimeElapsed() const
 {
     return m_timeElapsed;
+}
+
+void Player::setPlaying(const bool& val)
+{
+    if (val != m_playing)
+    {
+        m_playing = val;
+        Q_EMIT playingChanged();
+    }
+}
+
+bool Player::getPlaying() const
+{
+    std::cout << "RETURNING: " << static_cast<bool>(m_playing) << '\n';
+    return static_cast<bool>(m_playing);
 }
