@@ -118,6 +118,10 @@ Kirigami.ApplicationWindow {
                     id: stopButton
                     Layout.alignment: Qt.AlignHCenter
                     icon.name: "media-playback-stop"
+
+                    onClicked: {
+                        Player.stop()
+                    }
                 }
             }
 
