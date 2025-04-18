@@ -298,8 +298,11 @@ void Player::seek(const int& pos)
 {
     if (m_loaded)
     {
-        g_print("Seeking to position: %" GST_TIME_FORMAT "\r", GST_TIME_ARGS(pos * GST_SECOND));
-        gst_element_seek_simple(m_data.playbin, GST_FORMAT_TIME, static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_KEY_UNIT), static_cast<gint64>(pos * GST_SECOND));
+        if (m_data.seek_enabled)
+        {
+            g_print("Seeking to position: %" GST_TIME_FORMAT "\r", GST_TIME_ARGS(pos * GST_SECOND));
+            gst_element_seek_simple(m_data.playbin, GST_FORMAT_TIME, static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_KEY_UNIT), static_cast<gint64>(pos * GST_SECOND));
+        }
     }
 }
 
