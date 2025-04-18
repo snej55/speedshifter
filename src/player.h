@@ -62,6 +62,9 @@ public:
     Q_INVOKABLE
     void stop();
 
+    Q_INVOKABLE
+    void seek(const int& pos);
+
     [[nodiscard]] QString filePath() const;
     void setFilePath(const QString& val);
 
@@ -78,6 +81,9 @@ public:
 
     void setPlaying(const bool& val);
     [[nodiscard]] bool getPlaying() const;
+
+    void setSeekingEnabled(const bool& val);
+    [[nodiscard]] bool getSeekingEnabled() const;
 
 Q_SIGNALS:
     void filePathChanged();
@@ -98,6 +104,8 @@ private:
 
     int m_timeElapsed{0}; // seconds
     int m_duration{0}; // in seconds
+
+    bool m_seekingEnabled{true};
 
     // gstreamer stuff
     StreamData m_data{};

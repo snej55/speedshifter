@@ -77,6 +77,8 @@ void Player::load()
     std::cout << "loading!\n";
     m_loaded = false;
     setPlaying(false);
+    setTimeElapsed(0);
+    setDuration(0);
 
     free();
 
@@ -148,8 +150,7 @@ gboolean Player::handle_message(GstBus *bus, GstMessage *msg, StreamData *data)
             g_print("\nEnd of Stream reached.\n");
             Player* player;
             player = static_cast<Player*>(data->player);
-            player->setTimeElapsed(0);
-            player->setPlaying(false);
+            player->stop();
             data->playing = false;
             data->terminate = TRUE;
             break;
@@ -219,7 +220,13 @@ gboolean Player::update_player(StreamData *data)
     {
         g_printerr("Could not query current position.\n");
     } else {
+        // prevent from triggering unwanted seek
+        player->setSeekingEnabled(false);
+        // calculate time in seconds
+        // setter method sends qt signal to update qml
         player->setTimeElapsed(static_cast<int>((gdouble)current / GST_SECOND));
+        // we can re-enable seeking now
+        player->setSeekingEnabled(true);
     }
 
     // if it's unknown query stream duration
@@ -280,9 +287,19 @@ void Player::stop()
             gst_object_unref(m_data.playbin); // free
             return;
         }
+        // return to start
         setPlaying(false);
         setTimeElapsed(0);
         std::cout << "Set playbin to ready state\n";
+    }
+}
+
+void Player::seek(const int& pos)
+{
+    if (m_loaded)
+    {
+        g_print("Seeking to position: %" GST_TIME_FORMAT "\r", GST_TIME_ARGS(pos * GST_SECOND));
+        gst_element_seek_simple(m_data.playbin, GST_FORMAT_TIME, static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_KEY_UNIT), static_cast<gint64>(pos * GST_SECOND));
     }
 }
 
@@ -329,4 +346,17 @@ bool Player::getPlaying() const
 {
     std::cout << "RETURNING: " << static_cast<bool>(m_playing) << '\n';
     return static_cast<bool>(m_playing);
+}
+
+void Player::setSeekingEnabled(const bool& val)
+{
+    if (val != m_seekingEnabled)
+    {
+        m_seekingEnabled = val;
+    }
+}
+
+bool Player::getSeekingEnabled() const
+{
+    return m_seekingEnabled;
 }

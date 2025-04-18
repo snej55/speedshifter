@@ -120,6 +120,7 @@ Kirigami.ApplicationWindow {
                     icon.name: "media-playback-stop"
 
                     onClicked: {
+                        console.log("stopping!")
                         Player.stop()
                     }
                 }
@@ -131,6 +132,10 @@ Kirigami.ApplicationWindow {
                 Layout.fillWidth: true
                 value: Player.timeElapsed
                 to: Player.duration
+
+                onMoved: {
+                    Player.seek(value)
+                }
             }
         }
     }
