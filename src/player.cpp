@@ -123,6 +123,9 @@ void Player::load()
 
     m_loaded = true;
     m_freed = false;
+
+    // add timeout to update player data
+    g_timeout_add_seconds(1, reinterpret_cast<GSourceFunc>(update_player), &m_data);
 }
 
 gboolean Player::handle_message(GstBus *bus, GstMessage *msg, StreamData *data)
@@ -158,6 +161,7 @@ gboolean Player::handle_message(GstBus *bus, GstMessage *msg, StreamData *data)
                         gst_element_state_get_name(newState));
 
                 data->playing = (newState == GST_STATE_PLAYING);
+                data->state = newState;
 
                 std::cout << "Playing: " << (data->playing ? "true" : "false") << '\n';
                 if (data->playing)
@@ -195,10 +199,12 @@ gboolean Player::handle_message(GstBus *bus, GstMessage *msg, StreamData *data)
 gboolean Player::update_player(StreamData *data)
 {
     gint64 current{-1};
-    static_cast<Player*>(data->player)->setPlaying(data->playing);
+
+    Player* player {static_cast<Player*>(data->player)};
+    player->setPlaying(data->playing);
 
     // we don't want to update unless state is PLAYING or PAUSED
-    if (data->state < GST_STATE_PAUSED)
+    if (data->state != GST_STATE_PAUSED && data->state != GST_STATE_PLAYING)
     {
         return TRUE;
     }
@@ -207,6 +213,8 @@ gboolean Player::update_player(StreamData *data)
     if (!gst_element_query_position(data->playbin, GST_FORMAT_TIME, &current))
     {
         g_printerr("Could not query current position.\n");
+    } else {
+        player->setTimeElapsed(static_cast<int>((gdouble)current / GST_SECOND));
     }
 
     // if it's unknown query stream duration
@@ -215,6 +223,8 @@ gboolean Player::update_player(StreamData *data)
         if (!gst_element_query_duration(data->playbin, GST_FORMAT_TIME, &data->duration))
         {
             g_printerr("Could not query duration.\n");
+        } else {
+            player->setDuration(static_cast<int>((gdouble)data->duration / GST_SECOND));
         }
     }
 
@@ -266,6 +276,7 @@ void Player::stop()
             return;
         }
         setPlaying(false);
+        setTimeElapsed(0);
         std::cout << "Set playbin to ready state\n";
     }
 }

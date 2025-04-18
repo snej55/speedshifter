@@ -129,8 +129,8 @@ Kirigami.ApplicationWindow {
                 id: playPosition
                 Layout.alignment: Qt.AlignHCenter
                 Layout.fillWidth: true
-                value: 0
-                to: 100
+                value: Player.timeElapsed
+                to: Player.duration
             }
         }
     }
