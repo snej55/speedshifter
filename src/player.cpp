@@ -43,6 +43,8 @@ void Player::setPlaybackSpeed(const float &val)
     if (val != m_playBackSpeed)
     {
         m_playBackSpeed = std::max(0.0f, std::min(2.0f, val));
+        m_data.rate = static_cast<gdouble>(m_playBackSpeed);
+        update_rate();
         Q_EMIT playbackSpeedChanged();
     }
 }
@@ -93,6 +95,7 @@ void Player::load()
     m_data.seek_done = FALSE;
     m_data.duration = GST_CLOCK_TIME_NONE;
     m_data.player = this;
+    m_data.rate = static_cast<gdouble>(1.0);
 
     // create elements
     m_data.playbin = gst_element_factory_make("playbin", "playbin");
@@ -361,6 +364,18 @@ void Player::update_rate() const
     }
 
     // create seek event
+    // we seek to same position, since we only want to change the rate
+    if (m_data.rate > 0.0)
+    {
+        seekEvent = gst_event_new_seek(m_data.rate, GST_FORMAT_TIME, static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE), GST_SEEK_TYPE_SET, position, GST_SEEK_TYPE_END, 0);
+    } else {
+        seekEvent = gst_event_new_seek(m_data.rate, GST_FORMAT_TIME, static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE), GST_SEEK_TYPE_SET, 0, GST_SEEK_TYPE_SET, position);
+    }
+
+    // send the event
+    gst_element_send_event(m_data.sink, seekEvent);
+
+    g_print("Current rate: %g\n", m_data.rate);
 }
 
 // --------------------------- getters & setters --------------------------- //
