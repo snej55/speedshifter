@@ -21,3 +21,4 @@ A practice tool for musicians to slow down audio tracks whilst maintaining corre
 #### Polish:
 
  - [ ] Error banner
+ - [ ] Metadata
