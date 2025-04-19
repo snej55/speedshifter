@@ -1,37 +1,31 @@
 #ifndef TIMER_H
 #define TIMER_H
 
-#include <gst/gst.h>
+#include <ctime>
+#include <chrono>
 
+using t_timepoint = std::chrono::time_point<std::chrono::system_clock>;
+using t_duration = std::chrono::duration<double>;
 // simple timer class
 class Timer
 {
 public:
-    Timer(GstElement* element);
+    Timer();
 
-    // records current time as lastTime
-    // and recalculates lastDelta
+    // record new last time and calculate new delta
     void record();
 
-    // resets base time and all fields
+    // reset base time
     void reset();
 
-    // returns current time since base time in milliseconds
-    int getTime();
-
-    // get raw fields
-    [[nodiscard]] GstClockTime getRawBaseTime() const {return m_startTime;}
-    [[nodiscard]] GstClockTime getRawLastTime() const {return m_lastTime;}
-    [[nodiscard]] GstClockTimeDiff getRawLastDelta() const {return m_lastDelta;}
-    [[nodiscard]] GstElement* getElement() const {return m_element;}
-    [[nodiscard]] GstClock* getClock() const {return m_clock;}
+    // get time in seconds
+    double getTime();
 
 private:
-    GstElement* m_element;
-    GstClock* m_clock;
-    GstClockTime m_startTime{}; // base time
-    GstClockTime m_lastTime{}; // last time recorded
-    GstClockTimeDiff m_lastDelta{}; // last difference recorded
+    t_timepoint m_startTime;
+    t_timepoint m_lastTime{};
+
+    t_duration m_lastDelta{};
 };
 
 #endif

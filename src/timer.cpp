@@ -1,34 +1,29 @@
 #include "timer.h"
 
-Timer::Timer(GstElement* element)
- : m_element {element}, m_clock{gst_element_get_clock(element)}
+Timer::Timer()
+ : m_startTime{std::chrono::system_clock::now()}
 {
-    // calculate base time
-    m_startTime = gst_clock_get_time(m_clock);
     m_lastTime = m_startTime;
-    m_lastDelta = 0;
+    m_lastDelta = m_lastTime - m_startTime;
 }
 
 void Timer::record()
 {
-    // calculate last time and new delta
-    m_lastTime = gst_clock_get_time(m_clock);
+    m_lastTime = std::chrono::system_clock::now();
     m_lastDelta = m_lastTime - m_startTime;
 }
 
 void Timer::reset()
 {
-    // reset base time
-    m_startTime = gst_clock_get_time(m_clock);
+    m_startTime = std::chrono::system_clock::now();
     m_lastTime = m_startTime;
-    m_lastDelta = 0;
+    m_lastDelta = m_lastTime - m_startTime;
 }
 
-int Timer::getTime()
+double Timer::getTime()
 {
-    // record new delta
     record();
-    // convert to milliseconds
-    int timeDelta {static_cast<int>((gdouble)m_lastDelta / GST_MSECOND)};
-    return timeDelta;
+    double delta{m_lastDelta.count()};
+
+    return delta;
 }

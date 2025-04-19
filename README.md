@@ -15,3 +15,7 @@ A practice tool for musicians to slow down audio tracks whilst maintaining corre
 - [ ] Scale dial properly
 - [ ] Add vfx
 - [ ] Make crossplatorm ports (Windows -> Mac -> Android -> iOS)
+
+#### Polish:
+
+ - [ ] Error banner

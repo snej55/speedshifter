@@ -14,6 +14,7 @@ Player::Player(QObject *parent)
 Player::~Player()
 {
     delete m_Timer;
+    m_Timer = nullptr;
     free();
 }
 
@@ -307,6 +308,12 @@ void Player::seek(const int& pos)
         {
             g_print("Seeking to position: %" GST_TIME_FORMAT "\r", GST_TIME_ARGS(pos * GST_SECOND));
             gst_element_seek_simple(m_data.playbin, GST_FORMAT_TIME, static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_KEY_UNIT), static_cast<gint64>(pos * GST_SECOND));
+            if (m_Timer != nullptr)
+            {
+                std::cout << "Seeking" << m_Timer->getTime() << '\n';
+            } else {
+                std::cout << "Seeking\n";
+            }
         }
     }
 }
