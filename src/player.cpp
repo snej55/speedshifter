@@ -7,14 +7,12 @@
 #include <QFile>
 
 Player::Player(QObject *parent)
-    : QObject{parent}
+    : QObject{parent}, m_Timer{}
 {
 }
 
 Player::~Player()
 {
-    delete m_Timer;
-    m_Timer = nullptr;
     free();
 }
 
@@ -127,10 +125,6 @@ void Player::load()
 
     m_loaded = true;
     m_freed = false;
-
-    // create new timer
-    delete m_Timer;
-    m_Timer = new Timer{};
 
     // add timeout to update player data every 50 milliseconds
     g_timeout_add(50, reinterpret_cast<GSourceFunc>(update_player), &m_data);
@@ -303,15 +297,15 @@ void Player::stop()
 void Player::seek(const int& pos)
 {
     constexpr double seekTime {0.2};
-    if (m_loaded && m_Timer != nullptr)
+    if (m_loaded)
     {
         m_targetSeek = pos;
-        if (m_data.seek_enabled && m_Timer->getTime() > seekTime)
+        if (m_data.seek_enabled && m_Timer.getTime() > seekTime)
         {
             g_print("Seeking to position: %" GST_TIME_FORMAT "\r", GST_TIME_ARGS(m_targetSeek * GST_SECOND));
             gst_element_seek_simple(m_data.playbin, GST_FORMAT_TIME, static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_KEY_UNIT), static_cast<gint64>(m_targetSeek * GST_SECOND));
-            std::cout << "Seeking to: " << m_Timer->getTime() << std::endl;
-            m_Timer->reset();
+            std::cout << m_Timer.getTime() << "s since last seek" << std::endl;
+            m_Timer.reset();
         }
     }
 }
