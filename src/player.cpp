@@ -130,7 +130,7 @@ void Player::load()
 
     // create new timer
     delete m_Timer;
-    m_Timer = new Timer{m_data.playbin};
+    m_Timer = new Timer{};
 
     // add timeout to update player data every 50 milliseconds
     g_timeout_add(50, reinterpret_cast<GSourceFunc>(update_player), &m_data);
@@ -302,18 +302,16 @@ void Player::stop()
 
 void Player::seek(const int& pos)
 {
-    if (m_loaded)
+    constexpr double seekTime {0.2};
+    if (m_loaded && m_Timer != nullptr)
     {
-        if (m_data.seek_enabled)
+        m_targetSeek = pos;
+        if (m_data.seek_enabled && m_Timer->getTime() > seekTime)
         {
-            g_print("Seeking to position: %" GST_TIME_FORMAT "\r", GST_TIME_ARGS(pos * GST_SECOND));
-            gst_element_seek_simple(m_data.playbin, GST_FORMAT_TIME, static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_KEY_UNIT), static_cast<gint64>(pos * GST_SECOND));
-            if (m_Timer != nullptr)
-            {
-                std::cout << "Seeking" << m_Timer->getTime() << '\n';
-            } else {
-                std::cout << "Seeking\n";
-            }
+            g_print("Seeking to position: %" GST_TIME_FORMAT "\r", GST_TIME_ARGS(m_targetSeek * GST_SECOND));
+            gst_element_seek_simple(m_data.playbin, GST_FORMAT_TIME, static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_KEY_UNIT), static_cast<gint64>(m_targetSeek * GST_SECOND));
+            std::cout << "Seeking to: " << m_Timer->getTime() << std::endl;
+            m_Timer->reset();
         }
     }
 }
