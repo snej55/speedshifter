@@ -15,6 +15,7 @@
 struct StreamData {
     GstElement* playbin;
     GstElement* bin;
+    // GstElement* decodebin;
     GstElement* scaletempo;
     GstElement* convert;
     GstElement* resample;
@@ -76,7 +77,7 @@ public:
     bool isSeeking();
 
     // sends a seek event to change rate
-    void update_rate() const;
+    void update_rate();
 
     [[nodiscard]] QString filePath() const;
     void setFilePath(const QString& val);
@@ -128,7 +129,9 @@ private:
     bool m_seekingEnabled{true};
     int m_targetSeek{0}; // seek buffer
 
+    float m_lastRate{1.0};
     bool m_updateRate{false}; // should we update rate?
+    Timer m_updateRateTimer;
 
     Timer m_Timer;
     Timer m_delayTimer; // to block player updates while seeking

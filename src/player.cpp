@@ -7,7 +7,7 @@
 #include <QFile>
 
 Player::Player(QObject *parent)
-    : QObject{parent}, m_Timer{}, m_delayTimer{}
+    : QObject{parent}, m_Timer{}, m_delayTimer{}, m_updateRateTimer{}
 {
 }
 
@@ -104,7 +104,7 @@ void Player::load()
     m_data.scaletempo = gst_element_factory_make("scaletempo", "scaletempo");
     m_data.convert = gst_element_factory_make("audioconvert", "convert");
     m_data.resample = gst_element_factory_make("audioresample", "resample");
-    m_data.sink = gst_element_factory_make("autoaudiosink", "audio_sink");
+    m_data.sink = gst_element_factory_make("alsasink", "audio_sink");
 
     if (!m_data.playbin || !m_data.scaletempo || !m_data.convert || !m_data.resample || !m_data.sink)
     {
@@ -367,8 +367,14 @@ void Player::seek(const int& pos, bool force)
 }
 
 // sends a seek event to update playback rate
-void Player::update_rate() const
+void Player::update_rate()
 {
+    constexpr double rateChangeDelay{0.2};
+    if (m_updateRateTimer.getTime() < rateChangeDelay)
+    {
+        m_updateRate = true;
+        return;
+    }
     if (!m_data.seek_enabled)
     {
         g_printerr("Seeking is disabled.\n");
@@ -397,6 +403,8 @@ void Player::update_rate() const
     gst_element_send_event(m_data.sink, seekEvent);
 
     g_print("Current rate: %g\n", m_data.rate);
+
+    m_updateRateTimer.reset();
 }
 
 // --------------------------- getters & setters --------------------------- //

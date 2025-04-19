@@ -8,7 +8,9 @@ A practice tool for musicians to slow down audio tracks whilst maintaining corre
 - [X] Add media controls
 - [X] Add seeking
 - [X] Add buffer for seeking
-- [ ] Add scaletempo
+- [X] Add scaletempo
+- [ ] Fix mp3s
+- [ ] Don't allow 0% speed
 - [ ] Add screenshots
 - [ ] Make website + download page
 - [ ] Make promo video
