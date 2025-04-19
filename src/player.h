@@ -14,6 +14,10 @@
 // for gstreamer playback
 struct StreamData {
     GstElement* playbin;
+    GstElement* bin;
+    GstElement* scaletempo;
+    GstElement* convert;
+    GstElement* sink;
 
     gint n_audio; // num of embedded audio streams
     gint current_audio; // currently playing audio stream

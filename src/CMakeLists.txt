@@ -19,13 +19,6 @@ ecm_target_qml_sources(speedshifter
     Main.qml
 )
 
-# qt_add_qml_module(speedshifter
-#     URI org.kde.speedshifter.player
-#     VERSION 1.0
-#     SOURCES
-#     player.h player.cpp
-# )
-
 target_link_libraries(speedshifter
     PRIVATE
     Qt6::Core

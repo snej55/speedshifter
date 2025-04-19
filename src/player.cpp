@@ -83,6 +83,8 @@ void Player::load()
     free();
 
     gint flags;
+    GstPad* pad;
+    GstPad* ghostPad;
 
     m_data = StreamData{};
     m_data.playing = FALSE;
@@ -95,7 +97,11 @@ void Player::load()
     // create elements
     m_data.playbin = gst_element_factory_make("playbin", "playbin");
 
-    if (!m_data.playbin)
+    m_data.scaletempo = gst_element_factory_make("scaletempo", "scaletempo");
+    m_data.convert = gst_element_factory_make("audioconvert", "convert");
+    m_data.sink = gst_element_factory_make("autoaudiosink", "audio_sink");
+
+    if (!m_data.playbin || !m_data.scaletempo || !m_data.convert || !m_data.sink)
     {
         std::cout << "Not all elements could be created\n";
         return;
@@ -106,6 +112,19 @@ void Player::load()
     // load URI
     g_object_set(m_data.playbin, "uri", m_filePath.toStdString().c_str(), nullptr);
     std::cout << "Loading from uri: " << m_filePath.toStdString().c_str() << '\n';
+
+    // create sink bin, add elements and link them
+    m_data.bin = gst_bin_new("audio_sink_bin");
+    gst_bin_add_many(GST_BIN(m_data.bin), m_data.scaletempo, m_data.convert, m_data.sink, nullptr);
+    gst_element_link_many(m_data.scaletempo, m_data.convert, m_data.sink, nullptr);
+    pad = gst_element_get_static_pad(m_data.scaletempo, "sink");
+    ghostPad = gst_ghost_pad_new("sink", pad);
+    gst_pad_set_active(ghostPad, TRUE);
+    gst_element_add_pad(m_data.bin, ghostPad);
+    gst_object_unref(pad);
+    std::cout << "Created sink bin!\n";
+
+    g_object_set(m_data.playbin, "audio-sink", m_data.bin, nullptr);
 
     // set flags to show audio but ignore video and subtitles
     g_object_get(m_data.playbin, "flags", &flags, nullptr);
