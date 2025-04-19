@@ -17,6 +17,7 @@ struct StreamData {
     GstElement* bin;
     GstElement* scaletempo;
     GstElement* convert;
+    GstElement* resample;
     GstElement* sink;
 
     gint n_audio; // num of embedded audio streams

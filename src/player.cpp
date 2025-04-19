@@ -97,11 +97,13 @@ void Player::load()
     // create elements
     m_data.playbin = gst_element_factory_make("playbin", "playbin");
 
+    // scaletempo audio pipeline: audio_sink="scaletempo ! audioconvert ! audioresample ! autoaudiosink"
     m_data.scaletempo = gst_element_factory_make("scaletempo", "scaletempo");
     m_data.convert = gst_element_factory_make("audioconvert", "convert");
+    m_data.resample = gst_element_factory_make("audioresample", "resample");
     m_data.sink = gst_element_factory_make("autoaudiosink", "audio_sink");
 
-    if (!m_data.playbin || !m_data.scaletempo || !m_data.convert || !m_data.sink)
+    if (!m_data.playbin || !m_data.scaletempo || !m_data.convert || !m_data.resample || !m_data.sink)
     {
         std::cout << "Not all elements could be created\n";
         return;
@@ -115,14 +117,18 @@ void Player::load()
 
     // create sink bin, add elements and link them
     m_data.bin = gst_bin_new("audio_sink_bin");
-    gst_bin_add_many(GST_BIN(m_data.bin), m_data.scaletempo, m_data.convert, m_data.sink, nullptr);
-    gst_element_link_many(m_data.scaletempo, m_data.convert, m_data.sink, nullptr);
+    gst_bin_add_many(GST_BIN(m_data.bin), m_data.scaletempo, m_data.convert, m_data.resample, m_data.sink, nullptr);
+    gst_element_link_many(m_data.scaletempo, m_data.convert, m_data.resample, m_data.sink, nullptr);
     pad = gst_element_get_static_pad(m_data.scaletempo, "sink");
     ghostPad = gst_ghost_pad_new("sink", pad);
     gst_pad_set_active(ghostPad, TRUE);
     gst_element_add_pad(m_data.bin, ghostPad);
     gst_object_unref(pad);
     std::cout << "Created sink bin!\n";
+
+    // configure scaletempo
+    // NOTE: does not work, rate property is read only https://gitlab.freedesktop.org/gstreamer/gst-plugins-good/-/issues/261
+    // g_object_set(G_OBJECT(m_data.scaletempo), "rate", static_cast<gdouble>(-2.0), nullptr);
 
     g_object_set(m_data.playbin, "audio-sink", m_data.bin, nullptr);
 
