@@ -7,7 +7,7 @@
 #include <QFile>
 
 Player::Player(QObject *parent)
-    : QObject{parent}, m_Timer{}, m_delayTimer{}, m_updateRateTimer{}
+    : QObject{parent}, m_updateRateTimer{}, m_Timer{}, m_delayTimer{}
 {
 }
 
