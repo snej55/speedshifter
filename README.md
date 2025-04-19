@@ -7,7 +7,7 @@ A practice tool for musicians to slow down audio tracks whilst maintaining corre
 - [X] Add file dialog
 - [X] Add media controls
 - [X] Add seeking
-- [ ] Add buffer for seeking
+- [X] Add buffer for seeking
 - [ ] Add scaletempo
 - [ ] Add screenshots
 - [ ] Make website + download page
