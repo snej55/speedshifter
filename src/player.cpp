@@ -156,6 +156,10 @@ void Player::load()
 
     // add timeout to update player data every 50 milliseconds
     g_timeout_add(50, reinterpret_cast<GSourceFunc>(update_player), &m_data);
+
+    // update rate
+    update_rate();
+    std::cout << "Playback rate: " << static_cast<double>(m_data.rate) << '\n';
 }
 
 gboolean Player::handle_message(GstBus *bus, GstMessage *msg, StreamData *data)
@@ -221,6 +225,8 @@ gboolean Player::handle_message(GstBus *bus, GstMessage *msg, StreamData *data)
                     }
                     gst_query_unref(query);
                 }
+                // g_print("Update rate after state change\n");
+                // static_cast<Player*>(data->player)->update_rate();
             }
             break;
         default:
@@ -257,6 +263,7 @@ gboolean Player::update_player(StreamData *data)
     if (!gst_element_query_position(data->playbin, GST_FORMAT_TIME, &current))
     {
         g_printerr("Could not query current position.\n");
+        return TRUE; // we can't update rate if position is invalid
     } else {
         // prevent from triggering unwanted seek
         player->setSeekingEnabled(false);
@@ -280,6 +287,13 @@ gboolean Player::update_player(StreamData *data)
 
     g_print("Position %" GST_TIME_FORMAT " / %" GST_TIME_FORMAT "\r", GST_TIME_ARGS(current),
             GST_TIME_ARGS(data->duration));
+
+    if (player->getShouldUpdateRate())
+    {
+        g_print("Updating rate...\n");
+        player->update_rate();
+        player->setUpdateRate(false);
+    }
 
     return TRUE;
 }
@@ -346,6 +360,8 @@ void Player::seek(const int& pos, bool force)
             std::cout << m_Timer.getTime() << "s since last seek" << std::endl;
             m_Timer.reset();
             m_targetSeek = 0;
+            std::cout << "Updating rate after seek...\n";
+            m_updateRate = true;
         }
     }
 }
@@ -353,6 +369,11 @@ void Player::seek(const int& pos, bool force)
 // sends a seek event to update playback rate
 void Player::update_rate() const
 {
+    if (!m_data.seek_enabled)
+    {
+        g_printerr("Seeking is disabled.\n");
+        return;
+    }
     gint64 position;
     GstEvent* seekEvent;
 
@@ -440,4 +461,12 @@ bool Player::isSeeking()
 {
     constexpr double delayTime {0.3}; // slightly longer than seek time
     return m_delayTimer.getTime() < delayTime;
+}
+
+void Player::setUpdateRate(const bool& val)
+{
+    if (val != m_updateRate)
+    {
+        m_updateRate = val;
+    }
 }

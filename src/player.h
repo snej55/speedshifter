@@ -102,6 +102,9 @@ public:
     [[nodiscard]] Timer* getSeekTimer() {return &m_Timer;}
     [[nodiscard]] Timer* getDelayTimer() {return &m_delayTimer;}
 
+    void setUpdateRate(const bool& val);
+    [[nodiscard]] bool getShouldUpdateRate() const {return m_updateRate;}
+
 Q_SIGNALS:
     void filePathChanged();
     void playbackSpeedChanged();
@@ -124,6 +127,8 @@ private:
 
     bool m_seekingEnabled{true};
     int m_targetSeek{0}; // seek buffer
+
+    bool m_updateRate{false}; // should we update rate?
 
     Timer m_Timer;
     Timer m_delayTimer; // to block player updates while seeking
