@@ -65,7 +65,7 @@ public:
     void stop();
 
     Q_INVOKABLE
-    void seek(const int& pos);
+    void seek(const int& pos, bool force=false);
 
     [[nodiscard]] QString filePath() const;
     void setFilePath(const QString& val);
@@ -86,6 +86,12 @@ public:
 
     void setSeekingEnabled(const bool& val);
     [[nodiscard]] bool getSeekingEnabled() const;
+
+    bool isSeeking();
+
+    [[nodiscard]] int getTargetSeek() const {return m_targetSeek;}
+    [[nodiscard]] Timer* getSeekTimer() {return &m_Timer;}
+    [[nodiscard]] Timer* getDelayTimer() {return &m_delayTimer;}
 
 Q_SIGNALS:
     void filePathChanged();
@@ -111,6 +117,7 @@ private:
     int m_targetSeek{0}; // seek buffer
 
     Timer m_Timer;
+    Timer m_delayTimer; // to block player updates while seeking
 
     // gstreamer stuff
     StreamData m_data{};

@@ -7,7 +7,7 @@
 #include <QFile>
 
 Player::Player(QObject *parent)
-    : QObject{parent}, m_Timer{}
+    : QObject{parent}, m_Timer{}, m_delayTimer{}
 {
 }
 
@@ -215,6 +215,16 @@ gboolean Player::update_player(StreamData *data)
         return TRUE;
     }
 
+    if (player->isSeeking())
+    {
+        return TRUE;
+    } else {
+        if (player->getTargetSeek() != 0)
+        {
+            player->seek(player->getTargetSeek(), true);
+        }
+    }
+
     // query current position
     if (!gst_element_query_position(data->playbin, GST_FORMAT_TIME, &current))
     {
@@ -294,18 +304,20 @@ void Player::stop()
     }
 }
 
-void Player::seek(const int& pos)
+void Player::seek(const int& pos, bool force)
 {
     constexpr double seekTime {0.2};
+    m_delayTimer.reset(); // to block player updates for like 1/2 a second
     if (m_loaded)
     {
         m_targetSeek = pos;
-        if (m_data.seek_enabled && m_Timer.getTime() > seekTime)
+        if ((m_data.seek_enabled && m_Timer.getTime() > seekTime) || force)
         {
             g_print("Seeking to position: %" GST_TIME_FORMAT "\r", GST_TIME_ARGS(m_targetSeek * GST_SECOND));
             gst_element_seek_simple(m_data.playbin, GST_FORMAT_TIME, static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_KEY_UNIT), static_cast<gint64>(m_targetSeek * GST_SECOND));
             std::cout << m_Timer.getTime() << "s since last seek" << std::endl;
             m_Timer.reset();
+            m_targetSeek = 0;
         }
     }
 }
@@ -366,4 +378,10 @@ void Player::setSeekingEnabled(const bool& val)
 bool Player::getSeekingEnabled() const
 {
     return m_seekingEnabled;
+}
+
+bool Player::isSeeking()
+{
+    constexpr double delayTime {0.3}; // slightly longer than seek time
+    return m_delayTimer.getTime() < delayTime;
 }
