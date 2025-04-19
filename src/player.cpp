@@ -347,6 +347,22 @@ void Player::seek(const int& pos, bool force)
     }
 }
 
+// sends a seek event to update playback rate
+void Player::update_rate() const
+{
+    gint64 position;
+    GstEvent* seekEvent;
+
+    // obtain current position (need for seek event)
+    if (!gst_element_query_position(m_data.playbin, GST_FORMAT_TIME, &position))
+    {
+        g_printerr("Unable to query current position.\n");
+        return;
+    }
+
+    // create seek event
+}
+
 // --------------------------- getters & setters --------------------------- //
 
 void Player::setDuration(const int& val)

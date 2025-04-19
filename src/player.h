@@ -33,6 +33,8 @@ struct StreamData {
 
     GstState state;
     void* player;
+
+    gdouble rate; // playback rate
 };
 
 enum GstPlayFlags {
@@ -71,6 +73,10 @@ public:
 
     Q_INVOKABLE
     void seek(const int& pos, bool force=false);
+    bool isSeeking();
+
+    // sends a seek event to change rate
+    void update_rate() const;
 
     [[nodiscard]] QString filePath() const;
     void setFilePath(const QString& val);
@@ -91,10 +97,8 @@ public:
 
     void setSeekingEnabled(const bool& val);
     [[nodiscard]] bool getSeekingEnabled() const;
-
-    bool isSeeking();
-
     [[nodiscard]] int getTargetSeek() const {return m_targetSeek;}
+
     [[nodiscard]] Timer* getSeekTimer() {return &m_Timer;}
     [[nodiscard]] Timer* getDelayTimer() {return &m_delayTimer;}
 
