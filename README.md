@@ -10,7 +10,7 @@ A practice tool for musicians to slow down audio tracks whilst maintaining corre
 - [X] Add buffer for seeking
 - [X] Add scaletempo
 - [ ] Fix mp3s
-- [ ] Don't allow 0% speed
+- [X] Don't allow 0% speed
 - [ ] Add screenshots
 - [ ] Make website + download page
 - [ ] Make promo video

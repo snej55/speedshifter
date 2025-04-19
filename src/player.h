@@ -15,11 +15,11 @@
 struct StreamData {
     GstElement* playbin;
     GstElement* bin;
-    // GstElement* decodebin;
     GstElement* scaletempo;
     GstElement* convert;
     GstElement* resample;
     GstElement* sink;
+    GstElement* src;
 
     gint n_audio; // num of embedded audio streams
     gint current_audio; // currently playing audio stream
