@@ -95,7 +95,7 @@ void Player::load()
     m_data.seek_done = FALSE;
     m_data.duration = GST_CLOCK_TIME_NONE;
     m_data.player = this;
-    m_data.rate = static_cast<gdouble>(1.0);
+    m_data.rate = static_cast<gdouble>(m_playBackSpeed);
 
     // create elements
     m_data.playbin = gst_element_factory_make("playbin", "playbin");
