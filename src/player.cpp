@@ -42,7 +42,7 @@ void Player::setPlaybackSpeed(const float &val)
 {
     if (val != m_playBackSpeed)
     {
-        m_playBackSpeed = std::max(0.0f, std::min(2.0f, val));
+        m_playBackSpeed = std::max(0.02f, std::min(2.0f, val));
         m_data.rate = static_cast<gdouble>(m_playBackSpeed);
         update_rate();
         Q_EMIT playbackSpeedChanged();
