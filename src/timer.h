@@ -21,6 +21,10 @@ public:
     // get time in seconds
     double getTime();
 
+    [[nodiscard]] t_timepoint getRawStartTime() const {return m_startTime;}
+    [[nodiscard]] t_timepoint getRawLastTime() const {return m_lastTime;}
+    [[nodiscard]] t_duration getRawLastDelta() const {return m_lastDelta;}
+
 private:
     t_timepoint m_startTime;
     t_timepoint m_lastTime{};
