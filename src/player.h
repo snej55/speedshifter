@@ -73,7 +73,7 @@ public:
     void stop();
 
     Q_INVOKABLE
-    void seek(const int& pos, bool force=false);
+    void seek(const int& pos, bool force=false, bool update_rate=true);
     bool isSeeking();
 
     // sends a seek event to change rate
@@ -106,6 +106,9 @@ public:
     void setUpdateRate(const bool& val);
     [[nodiscard]] bool getShouldUpdateRate() const {return m_updateRate;}
 
+    void setDurationValid(const bool& val);
+    [[nodiscard]] bool getDurationValid() const {return m_durationValid;}
+
 Q_SIGNALS:
     void filePathChanged();
     void playbackSpeedChanged();
@@ -125,6 +128,7 @@ private:
 
     int m_timeElapsed{0}; // seconds
     int m_duration{0}; // in seconds
+    bool m_durationValid{false};
 
     bool m_seekingEnabled{true};
     int m_targetSeek{0}; // seek buffer

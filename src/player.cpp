@@ -289,8 +289,10 @@ gboolean Player::update_player(StreamData *data)
         if (!gst_element_query_duration(data->playbin, GST_FORMAT_TIME, &data->duration))
         {
             g_printerr("Could not query duration.\n");
+            player->setDurationValid(false);
         } else {
             player->setDuration(static_cast<int>((gdouble)data->duration / GST_SECOND));
+            player->setDurationValid(true);
         }
     }
 
@@ -353,15 +355,16 @@ void Player::stop()
         // return to start
         setPlaying(false);
         setTimeElapsed(0);
+        setDurationValid(false);
         std::cout << "Set playbin to ready state\n";
     }
 }
 
-void Player::seek(const int& pos, bool force)
+void Player::seek(const int& pos, bool force, bool update_rate)
 {
     constexpr double seekTime {0.2};
     m_delayTimer.reset(); // to block player updates for like 1/2 a second
-    if (m_loaded)
+    if (m_loaded && m_seekingEnabled)
     {
         m_targetSeek = pos;
         if ((m_data.seek_enabled && m_Timer.getTime() > seekTime) || force)
@@ -372,7 +375,10 @@ void Player::seek(const int& pos, bool force)
             m_Timer.reset();
             m_targetSeek = 0;
             std::cout << "Updating rate after seek...\n";
-            m_updateRate = true;
+            if (update_rate)
+            {
+                m_updateRate = true;
+            }
         }
     }
 }
@@ -386,6 +392,7 @@ void Player::update_rate()
         m_updateRate = true;
         return;
     }
+
     if (!m_data.seek_enabled)
     {
         g_printerr("Seeking is disabled.\n");
@@ -402,7 +409,7 @@ void Player::update_rate()
     }
 
     // create seek event
-    // we seek to same position, since we only want to change the rate
+    // // we seek to same position, since we only want to change the rate
     if (m_data.rate > 0.0)
     {
         seekEvent = gst_event_new_seek(m_data.rate, GST_FORMAT_TIME, static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE), GST_SEEK_TYPE_SET, position, GST_SEEK_TYPE_END, 0);
@@ -413,8 +420,8 @@ void Player::update_rate()
     // send the event
     gst_element_send_event(m_data.sink, seekEvent);
 
-    // update pitch tempo?
-    g_object_set(m_data.pitch, "tempo", static_cast<gdouble>(m_playBackSpeed), nullptr);
+    // update pitch tempo (this makes mp3 files work for some reason)
+    g_object_set(m_data.pitch, "tempo", m_data.rate, nullptr);
 
     g_print("Current rate: %g\n", m_data.rate);
 
@@ -490,5 +497,13 @@ void Player::setUpdateRate(const bool& val)
     if (val != m_updateRate)
     {
         m_updateRate = val;
+    }
+}
+
+void Player::setDurationValid(const bool& val)
+{
+    if (val != m_durationValid)
+    {
+        m_durationValid = val;
     }
 }
