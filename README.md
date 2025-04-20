@@ -11,7 +11,7 @@ A practice tool for musicians to slow down audio tracks whilst maintaining corre
 - [X] Add scaletempo
 - [X] Fix mp3s
 - [X] Don't allow 0% speed
-- [ ] Fix slider for mp3s
+- [X] Fix slider for mp3s
 - [ ] Add screenshots
 - [ ] Make website + download page
 - [ ] Make promo video
@@ -22,4 +22,4 @@ A practice tool for musicians to slow down audio tracks whilst maintaining corre
 #### Polish:
 
  - [ ] Error banner
- - [ ] Metadata
+ - [X] Metadata
