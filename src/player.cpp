@@ -322,11 +322,11 @@ gboolean Player::update_player(StreamData *data)
         if (!GST_CLOCK_TIME_IS_VALID(data->duration) || !player->getDurationValid())
         {
             {
-                data->rate = 1.0;
-                // temporary since update_rate() resets m_durationValid
-                bool tempValid {player->getDurationValid()};
-                player->update_rate(true);
-                player->setDurationValid(tempValid);
+                // data->rate = 1.0;
+                // // temporary since update_rate() resets m_durationValid
+                // bool tempValid {player->getDurationValid()};
+                // player->update_rate(true);
+                // player->setDurationValid(tempValid);
                 std::cout << "Querying duration...\n";
                 if (!gst_element_query_duration(data->playbin, GST_FORMAT_TIME, &data->duration))
                 {
@@ -335,11 +335,13 @@ gboolean Player::update_player(StreamData *data)
                 } else {
                     player->setDuration(static_cast<int>((gdouble)data->duration / GST_SECOND));
                     player->setDurationValid(true);
+                    std::cout << "Position: " << player->getTimeElapsed() << '\n';
+                    std::cout << "Duration: " << player->getDuration() << '\n';
                 }
-                tempValid = player->getDurationValid();
-                data->rate = static_cast<double>(player->playbackSpeed());
-                player->update_rate(true);
-                player->setDurationValid(tempValid);
+                // tempValid = player->getDurationValid();
+                // data->rate = static_cast<double>(player->playbackSpeed());
+                // player->update_rate(true);
+                // player->setDurationValid(tempValid);
             }
         }
     }
@@ -461,15 +463,18 @@ void Player::update_rate(bool force)
 
     // create seek event
     // we seek to same position, since we only want to change the rate
-    if (m_data.rate > 0.0)
+    if (m_playbackType == MEDIA_DURATION_VARIABLE)
     {
-        seekEvent = gst_event_new_seek(m_data.rate, GST_FORMAT_TIME, static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE), GST_SEEK_TYPE_SET, position, GST_SEEK_TYPE_END, 0);
-    } else {
-        seekEvent = gst_event_new_seek(m_data.rate, GST_FORMAT_TIME, static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE), GST_SEEK_TYPE_SET, 0, GST_SEEK_TYPE_SET, position);
-    }
+        if (m_data.rate > 0.0)
+        {
+            seekEvent = gst_event_new_seek(m_data.rate, GST_FORMAT_TIME, static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE), GST_SEEK_TYPE_SET, position, GST_SEEK_TYPE_END, 0);
+        } else {
+            seekEvent = gst_event_new_seek(m_data.rate, GST_FORMAT_TIME, static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE), GST_SEEK_TYPE_SET, 0, GST_SEEK_TYPE_SET, position);
+        }
 
-    // send the event
-    gst_element_send_event(m_data.sink, seekEvent);
+        // send the event
+        gst_element_send_event(m_data.sink, seekEvent);
+    }
 
     // update pitch tempo (this makes mp3 files work for some reason)
     g_object_set(m_data.pitch, "tempo", m_data.rate, nullptr);
