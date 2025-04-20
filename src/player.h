@@ -83,6 +83,9 @@ public:
     void stop();
 
     Q_INVOKABLE
+    void softStop();
+
+    Q_INVOKABLE
     void seek(const int& pos, bool force=false, bool update_rate=true);
     bool isSeeking();
 

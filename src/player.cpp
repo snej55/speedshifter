@@ -207,9 +207,9 @@ gboolean Player::handle_message(GstBus *bus, GstMessage *msg, StreamData *data)
             g_print("\nEnd of Stream reached.\n");
             Player* player;
             player = static_cast<Player*>(data->player);
-            player->stop();
             data->playing = false;
             data->terminate = TRUE;
+            player->pause();
             break;
         case GST_MESSAGE_DURATION:
             // duration has changed so current duration is invalid
@@ -320,37 +320,16 @@ gboolean Player::update_player(StreamData *data)
         }
     } else if (player->getPlaybackType() == Player::MEDIA_DURATION_STATIC) // mp3, mpeg4
     {
-        if (!GST_CLOCK_TIME_IS_VALID(data->duration) || !player->getDurationValid())
+        std::cout << "Querying duration...\n";
+        if (!gst_element_query_duration(data->playbin, GST_FORMAT_TIME, &data->duration))
         {
-            {
-                // data->rate = 1.0;
-                // // temporary since update_rate() resets m_durationValid
-                // bool tempValid {player->getDurationValid()};
-                // player->update_rate(true);
-                // player->setDurationValid(tempValid);
-                std::cout << "Querying duration...\n";
-                if (!gst_element_query_duration(data->playbin, GST_FORMAT_TIME, &data->duration))
-                {
-                    g_printerr("Could not query duration.\n");
-                    player->setDurationValid(false);
-                } else {
-                    if (!player->getDurationValid() || player->getFirstDuration() == 0)
-                    {
-                        player->setDuration(static_cast<int>((gdouble)data->duration / GST_SECOND));
-                        player->setDurationValid(true);
-                        std::cout << "Position: " << player->getTimeElapsed() << '\n';
-                        std::cout << "Duration: " << player->getDuration() << '\n';
-                        player->setFirstDuration(player->getDuration());
-                    } else {
-                        player->setDuration(player->getFirstDuration());
-                    }
-                    data->duration = static_cast<gint64>(player->getDuration() * GST_SECOND);
-                }
-                // tempValid = player->getDurationValid();
-                // data->rate = static_cast<double>(player->playbackSpeed());
-                // player->update_rate(true);
-                // player->setDurationValid(tempValid);
-            }
+            g_printerr("Could not query duration.\n");
+            player->setDurationValid(false);
+        } else {
+            player->setDuration(static_cast<int>((gdouble)data->duration / GST_SECOND));
+            player->setDurationValid(true);
+            std::cout << "Position: " << player->getTimeElapsed() << '\n';
+            std::cout << "Duration: " << player->getDuration() << '\n';
         }
     }
 
@@ -413,6 +392,24 @@ void Player::stop()
         // return to start
         setPlaying(false);
         setTimeElapsed(0);
+        setDurationValid(false);
+        std::cout << "Set playbin to ready state\n";
+    }
+}
+
+void Player::softStop()
+{
+    if (m_loaded)
+    {
+        if (gst_element_set_state(m_data.playbin, GST_STATE_READY) == GST_STATE_CHANGE_FAILURE)
+        {
+            g_printerr("Failed to set playbin to ready state.\n");
+            gst_object_unref(m_data.playbin); // free
+            return;
+        }
+        // don't return to start
+        setPlaying(false);
+        setTimeElapsed(m_timeElapsed);
         setDurationValid(false);
         std::cout << "Set playbin to ready state\n";
     }

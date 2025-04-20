@@ -135,7 +135,21 @@ Kirigami.ApplicationWindow {
                 to: Player.duration
 
                 onMoved: {
-                    Player.seek(value)
+                    if (Player.shouldSeek) {
+                        let playing = Player.playing
+                        let position = Player.timeElapsed
+                        Player.pause()
+                        Player.stop()
+                        Player.pause()
+                        Player.seek(position, true, false)
+                        if (playing)
+                            Player.play()
+                        else
+                            Player.pause()
+                        Player.shouldSeek = false;
+                    } else {
+                        Player.seek(value, false, false)
+                    }
                 }
             }
         }
