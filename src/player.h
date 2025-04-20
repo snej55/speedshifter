@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QString>
 #include <QMediaPlayer>
+#include <QMediaMetaData>
+#include <QtMultimedia/QMediaMetaData>
 
 #include <qqml.h>
 // gstreamer
@@ -79,6 +81,9 @@ public:
     // sends a seek event to change rate
     void update_rate(bool force=false);
 
+    // get's metadata from audio file
+    void getMetaData(QMediaPlayer* player) const;
+
     [[nodiscard]] QString filePath() const;
     void setFilePath(const QString& val);
 
@@ -109,12 +114,25 @@ public:
     void setDurationValid(const bool& val);
     [[nodiscard]] bool getDurationValid() const {return m_durationValid;}
 
+    enum MediaPlaybackType
+    {
+        MEDIA_TYPE_NONE,
+        MEDIA_DURATION_STATIC,
+        MEDIA_DURATION_VARIABLE
+    };
+
+    void setPlaybackType(const Player::MediaPlaybackType type);
+    [[nodiscard]] Player::MediaPlaybackType getPlaybackType() const {return m_playbackType;}
+
 Q_SIGNALS:
     void filePathChanged();
     void playbackSpeedChanged();
     void durationChanged();
     void timeElapsedChanged();
     void playingChanged();
+
+public Q_SLOTS:
+    void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
 
 private:
     QString m_filePath;
@@ -139,6 +157,10 @@ private:
 
     Timer m_Timer;
     Timer m_delayTimer; // to block player updates while seeking
+
+    // for metadata
+    QMediaPlayer* m_Player{nullptr};
+    Player::MediaPlaybackType m_playbackType{MEDIA_TYPE_NONE};
 
     // gstreamer stuff
     StreamData m_data{};

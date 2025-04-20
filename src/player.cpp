@@ -13,6 +13,7 @@ Player::Player(QObject *parent)
 
 Player::~Player()
 {
+    delete m_Player;
     free();
 }
 
@@ -53,6 +54,10 @@ void Player::init(int argc, char *argv[])
 {
     if (!m_initialized)
     {
+        // initialize QMediaPlayer
+        m_Player = new QMediaPlayer{this};
+        connect(m_Player, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)), this, SLOT(onMediaStatusChanged(QMediaPlayer::MediaStatus)));
+
         gst_init(&argc, &argv);
         m_initialized = true;
     }
@@ -82,6 +87,12 @@ void Player::load()
     setTimeElapsed(0);
     setDuration(0);
     setDurationValid(false);
+
+    // reset playback type
+    setPlaybackType(MEDIA_TYPE_NONE);
+    // load metadata
+    m_Player->setSource(QUrl(m_filePath));
+    getMetaData(m_Player);
 
     free();
 
@@ -142,6 +153,9 @@ void Player::load()
     // configure scaletempo
     // NOTE: does not work, rate property is read only https://gitlab.freedesktop.org/gstreamer/gst-plugins-good/-/issues/261
     // g_object_set(G_OBJECT(m_data.scaletempo), "rate", static_cast<gdouble>(-2.0), nullptr);
+    // g_object_set(G_OBJECT(m_data.scaletempo), "overlap", static_cast<gdouble>(0.05), nullptr);
+    // g_object_set(G_OBJECT(m_data.scaletempo), "stride", static_cast<guint>(10), nullptr);
+    // g_object_set(G_OBJECT(m_data.scaletempo), "search", static_cast<guint>(20), nullptr);
 
     g_object_set(m_data.playbin, "audio-sink", m_data.bin, nullptr);
 
@@ -437,6 +451,31 @@ void Player::update_rate(bool force)
     m_updateRateTimer.reset();
 }
 
+// media status changed slot
+void Player::onMediaStatusChanged(QMediaPlayer::MediaStatus status)
+{
+    if (status == QMediaPlayer::LoadedMedia)
+    {
+        getMetaData(m_Player);
+    }
+}
+
+void Player::getMetaData(QMediaPlayer* player) const
+{
+    std::cout << "Fetching metadata...\n";
+    // get list of keys for available metadata
+    const QMediaMetaData metadata {player->metaData()};
+    const QList<QMediaMetaData::Key> keys {metadata.keys()};
+    for (const auto& key : keys)
+    {
+        // get metadata field name and it's value
+        QString keyName {metadata.metaDataKeyToString(key)};
+        QString value {metadata.stringValue(key)};
+
+        std::cout << keyName.toStdString() << value.toStdString() << '\n';
+    }
+}
+
 // --------------------------- getters & setters --------------------------- //
 
 void Player::setDuration(const int& val)
@@ -514,5 +553,13 @@ void Player::setDurationValid(const bool& val)
     if (val != m_durationValid)
     {
         m_durationValid = val;
+    }
+}
+
+void Player::setPlaybackType(const Player::MediaPlaybackType type)
+{
+    if (type != m_playbackType)
+    {
+        m_playbackType = type;
     }
 }
