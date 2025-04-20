@@ -39,7 +39,7 @@ float Player::playbackSpeed() const
     return m_playBackSpeed;
 }
 
-void Player::setPlaybackSpeed(const float &val)
+void Player::setPlaybackSpeed(const float& val)
 {
     if (val != m_playBackSpeed)
     {
@@ -50,7 +50,7 @@ void Player::setPlaybackSpeed(const float &val)
     }
 }
 
-void Player::init(int argc, char *argv[])
+void Player::init(int argc, char* argv[])
 {
     if (!m_initialized)
     {
@@ -187,7 +187,7 @@ void Player::load()
     std::cout << "Playback rate: " << static_cast<double>(m_data.rate) << '\n';
 }
 
-gboolean Player::handle_message(GstBus *bus, GstMessage *msg, StreamData *data)
+gboolean Player::handle_message(GstBus* bus, GstMessage* msg, StreamData* data)
 {
     GError *err;
     gchar *debug_info;
@@ -261,7 +261,7 @@ gboolean Player::handle_message(GstBus *bus, GstMessage *msg, StreamData *data)
     return TRUE;
 }
 
-gboolean Player::update_player(StreamData *data)
+gboolean Player::update_player(StreamData* data)
 {
     gint64 current{-1};
 
@@ -320,7 +320,6 @@ gboolean Player::update_player(StreamData *data)
         }
     } else if (player->getPlaybackType() == Player::MEDIA_DURATION_STATIC) // mp3, mpeg4
     {
-        std::cout << "Querying duration...\n";
         if (!gst_element_query_duration(data->playbin, GST_FORMAT_TIME, &data->duration))
         {
             g_printerr("Could not query duration.\n");
@@ -328,8 +327,8 @@ gboolean Player::update_player(StreamData *data)
         } else {
             player->setDuration(static_cast<int>((gdouble)data->duration / GST_SECOND));
             player->setDurationValid(true);
-            std::cout << "Position: " << player->getTimeElapsed() << '\n';
-            std::cout << "Duration: " << player->getDuration() << '\n';
+            // std::cout << "Position: " << player->getTimeElapsed() << '\n';
+            // std::cout << "Duration: " << player->getDuration() << '\n';
         }
     }
 
