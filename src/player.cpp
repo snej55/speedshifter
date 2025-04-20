@@ -209,7 +209,7 @@ gboolean Player::handle_message(GstBus *bus, GstMessage *msg, StreamData *data)
             player = static_cast<Player*>(data->player);
             data->playing = false;
             data->terminate = TRUE;
-            player->pause();
+            player->stop();
             break;
         case GST_MESSAGE_DURATION:
             // duration has changed so current duration is invalid
