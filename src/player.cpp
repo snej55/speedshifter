@@ -472,8 +472,14 @@ void Player::getMetaData(QMediaPlayer* player) const
         QString keyName {metadata.metaDataKeyToString(key)};
         QString value {metadata.stringValue(key)};
 
-        std::cout << keyName.toStdString() << value.toStdString() << '\n';
+        std::cout << keyName.toStdString() << ": " << value.toStdString() << '\n';
     }
+
+    // get the useful info
+    QVariant fileType {metadata.value(QMediaMetaData::FileFormat)};
+    std::cout << "FileFormat: " << static_cast<int>(fileType.value<QMediaFormat::FileFormat>()) << '\n';
+    QVariant audioCodec {metadata.value(QMediaMetaData::AudioCodec)};
+    std::cout << "AudioCodec: " << static_cast<int>(audioCodec.value<QMediaFormat::AudioCodec>()) << '\n';
 }
 
 // --------------------------- getters & setters --------------------------- //

@@ -5,7 +5,7 @@
 #include <QString>
 #include <QMediaPlayer>
 #include <QMediaMetaData>
-#include <QtMultimedia/QMediaMetaData>
+#include <QMediaFormat>
 
 #include <qqml.h>
 // gstreamer
@@ -83,6 +83,8 @@ public:
 
     // get's metadata from audio file
     void getMetaData(QMediaPlayer* player) const;
+    // selects media playback type using container type and audio codec (static or variable duration)
+    void selectPlaybackType(QVariant fileType, QVariant audioCodec);
 
     [[nodiscard]] QString filePath() const;
     void setFilePath(const QString& val);
