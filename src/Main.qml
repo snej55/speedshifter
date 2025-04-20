@@ -82,8 +82,9 @@ Kirigami.ApplicationWindow {
                 Layout.alignment: Qt.AlignCenter
                 Layout.fillWidth: true
                 snapMode: Controls.Dial.SnapAlways
+                from: 30
                 value: 100
-                to: 200
+                to: 170
                 stepSize: 2.0
                 Controls.Label {
                     Layout.alignment: Qt.AlignHCenter

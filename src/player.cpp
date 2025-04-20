@@ -285,29 +285,20 @@ gboolean Player::update_player(StreamData *data)
     }
 
     // if it's unknown query stream duration
-    if (!GST_CLOCK_TIME_IS_VALID(data->duration))
+    if (!GST_CLOCK_TIME_IS_VALID(data->duration) || !player->getDurationValid())
     {
-        if (!player->getDurationValid())
+        std::cout << "Querying duration...\n";
+        if (!gst_element_query_duration(data->playbin, GST_FORMAT_TIME, &data->duration))
         {
-            data->rate = 1.0;
-            player->update_rate(true);
-            std::cout << "Querying duration...\n";
-            if (!gst_element_query_duration(data->playbin, GST_FORMAT_TIME, &data->duration))
+            g_printerr("Could not query duration.\n");
+            player->setDurationValid(false);
+        } else {
+            if (!player->getDurationValid())
             {
-                g_printerr("Could not query duration.\n");
-                player->setDurationValid(false);
-            } else {
-                if (!player->getDurationValid())
-                {
-                    player->setDuration(static_cast<int>((gdouble)data->duration / GST_SECOND));
-                    player->setDurationValid(true);
-
-                }
+                player->setDuration(static_cast<int>((gdouble)data->duration / GST_SECOND));
+                player->setDurationValid(true);
             }
-            data->rate = static_cast<double>(player->playbackSpeed());
-            player->update_rate(true);
         }
-
     }
 
     g_print("Position %" GST_TIME_FORMAT " / %" GST_TIME_FORMAT "\r", GST_TIME_ARGS(current),
@@ -426,7 +417,7 @@ void Player::update_rate(bool force)
     }
 
     // create seek event
-    // // we seek to same position, since we only want to change the rate
+    // we seek to same position, since we only want to change the rate
     if (m_data.rate > 0.0)
     {
         seekEvent = gst_event_new_seek(m_data.rate, GST_FORMAT_TIME, static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE), GST_SEEK_TYPE_SET, position, GST_SEEK_TYPE_END, 0);
@@ -439,6 +430,7 @@ void Player::update_rate(bool force)
 
     // update pitch tempo (this makes mp3 files work for some reason)
     g_object_set(m_data.pitch, "tempo", m_data.rate, nullptr);
+    m_durationValid = false;
 
     g_print("Current rate: %g\n", m_data.rate);
 
