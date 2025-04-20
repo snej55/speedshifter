@@ -87,6 +87,8 @@ void Player::load()
     gint flags;
     GstPad* pad;
     GstPad* ghostPad;
+    GstPad* pitchPad;
+    GstPad* ghostPitchPad;
 
     m_data = StreamData{};
     m_data.playing = FALSE;
@@ -105,8 +107,9 @@ void Player::load()
     m_data.convert = gst_element_factory_make("audioconvert", "convert");
     m_data.resample = gst_element_factory_make("audioresample", "resample");
     m_data.sink = gst_element_factory_make("autoaudiosink", "audio_sink");
+    m_data.pitch = gst_element_factory_make("pitch", "pitch");
 
-    if (!m_data.playbin || !m_data.scaletempo || !m_data.convert || !m_data.resample || !m_data.sink)
+    if (!m_data.playbin || !m_data.scaletempo || !m_data.convert || !m_data.resample || !m_data.sink || !m_data.pitch)
     {
         std::cout << "Not all elements could be created\n";
         return;
@@ -120,13 +123,19 @@ void Player::load()
 
     // create sink bin, add elements and link them
     m_data.bin = gst_bin_new("audio_sink_bin");
-    gst_bin_add_many(GST_BIN(m_data.bin), m_data.scaletempo, m_data.convert, m_data.resample, m_data.sink, nullptr);
-    gst_element_link_many(m_data.scaletempo, m_data.convert, m_data.resample, m_data.sink, nullptr);
+    gst_bin_add_many(GST_BIN(m_data.bin), m_data.scaletempo, m_data.pitch, m_data.convert, m_data.resample, m_data.sink, nullptr);
+    gst_element_link_many(m_data.scaletempo, m_data.pitch, m_data.convert, m_data.resample, m_data.sink, nullptr);
     pad = gst_element_get_static_pad(m_data.scaletempo, "sink");
     ghostPad = gst_ghost_pad_new("sink", pad);
     gst_pad_set_active(ghostPad, TRUE);
     gst_element_add_pad(m_data.bin, ghostPad);
     gst_object_unref(pad);
+
+    pitchPad = gst_element_get_static_pad(m_data.pitch, "sink");
+    ghostPitchPad = gst_ghost_pad_new("sink", pitchPad);
+    gst_pad_set_active(ghostPitchPad, TRUE);
+    gst_element_add_pad(m_data.bin, ghostPitchPad);
+    gst_object_unref(pitchPad);
     std::cout << "Created sink bin!\n";
 
     // configure scaletempo
@@ -403,6 +412,9 @@ void Player::update_rate()
 
     // send the event
     gst_element_send_event(m_data.sink, seekEvent);
+
+    // update pitch tempo?
+    g_object_set(m_data.pitch, "tempo", static_cast<gdouble>(m_playBackSpeed), nullptr);
 
     g_print("Current rate: %g\n", m_data.rate);
 
