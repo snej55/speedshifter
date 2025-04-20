@@ -299,18 +299,47 @@ gboolean Player::update_player(StreamData *data)
     }
 
     // if it's unknown query stream duration
-    if (!GST_CLOCK_TIME_IS_VALID(data->duration) || !player->getDurationValid())
+    // select based on playback type
+    if (player->getPlaybackType() == Player::MEDIA_DURATION_VARIABLE || player->getPlaybackType() == Player::MEDIA_TYPE_NONE) // wma, wmv, wav, etc
     {
-        std::cout << "Querying duration...\n";
-        if (!gst_element_query_duration(data->playbin, GST_FORMAT_TIME, &data->duration))
+        if (!GST_CLOCK_TIME_IS_VALID(data->duration) || !player->getDurationValid())
         {
-            g_printerr("Could not query duration.\n");
-            player->setDurationValid(false);
-        } else {
-            if (!player->getDurationValid())
+            std::cout << "Querying duration...\n";
+            if (!gst_element_query_duration(data->playbin, GST_FORMAT_TIME, &data->duration))
             {
-                player->setDuration(static_cast<int>((gdouble)data->duration / GST_SECOND));
-                player->setDurationValid(true);
+                g_printerr("Could not query duration.\n");
+                player->setDurationValid(false);
+            } else {
+                if (!player->getDurationValid())
+                {
+                    player->setDuration(static_cast<int>((gdouble)data->duration / GST_SECOND));
+                    player->setDurationValid(true);
+                }
+            }
+        }
+    } else if (player->getPlaybackType() == Player::MEDIA_DURATION_STATIC) // mp3, mpeg4
+    {
+        if (!GST_CLOCK_TIME_IS_VALID(data->duration) || !player->getDurationValid())
+        {
+            {
+                data->rate = 1.0;
+                // temporary since update_rate() resets m_durationValid
+                bool tempValid {player->getDurationValid()};
+                player->update_rate(true);
+                player->setDurationValid(tempValid);
+                std::cout << "Querying duration...\n";
+                if (!gst_element_query_duration(data->playbin, GST_FORMAT_TIME, &data->duration))
+                {
+                    g_printerr("Could not query duration.\n");
+                    player->setDurationValid(false);
+                } else {
+                    player->setDuration(static_cast<int>((gdouble)data->duration / GST_SECOND));
+                    player->setDurationValid(true);
+                }
+                tempValid = player->getDurationValid();
+                data->rate = static_cast<double>(player->playbackSpeed());
+                player->update_rate(true);
+                player->setDurationValid(tempValid);
             }
         }
     }
