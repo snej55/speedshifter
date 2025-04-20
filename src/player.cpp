@@ -87,6 +87,7 @@ void Player::load()
     setTimeElapsed(0);
     setDuration(0);
     setDurationValid(false);
+    setFirstDuration(0);
 
     // reset playback type
     setPlaybackType(MEDIA_TYPE_NONE);
@@ -333,10 +334,17 @@ gboolean Player::update_player(StreamData *data)
                     g_printerr("Could not query duration.\n");
                     player->setDurationValid(false);
                 } else {
-                    player->setDuration(static_cast<int>((gdouble)data->duration / GST_SECOND));
-                    player->setDurationValid(true);
-                    std::cout << "Position: " << player->getTimeElapsed() << '\n';
-                    std::cout << "Duration: " << player->getDuration() << '\n';
+                    if (!player->getDurationValid() || player->getFirstDuration() == 0)
+                    {
+                        player->setDuration(static_cast<int>((gdouble)data->duration / GST_SECOND));
+                        player->setDurationValid(true);
+                        std::cout << "Position: " << player->getTimeElapsed() << '\n';
+                        std::cout << "Duration: " << player->getDuration() << '\n';
+                        player->setFirstDuration(player->getDuration());
+                    } else {
+                        player->setDuration(player->getFirstDuration());
+                    }
+                    data->duration = static_cast<gint64>(player->getDuration() * GST_SECOND);
                 }
                 // tempValid = player->getDurationValid();
                 // data->rate = static_cast<double>(player->playbackSpeed());
@@ -352,8 +360,8 @@ gboolean Player::update_player(StreamData *data)
     if (player->getShouldUpdateRate())
     {
         g_print("Updating rate...\n");
-        player->update_rate();
         player->setUpdateRate(false);
+        player->update_rate();
     }
 
     return TRUE;
@@ -451,6 +459,7 @@ void Player::update_rate(bool force)
         g_printerr("Seeking is disabled.\n");
         return;
     }
+
     gint64 position;
     GstEvent* seekEvent;
 
@@ -465,11 +474,12 @@ void Player::update_rate(bool force)
     // we seek to same position, since we only want to change the rate
     if (m_playbackType == MEDIA_DURATION_VARIABLE)
     {
+
         if (m_data.rate > 0.0)
         {
             seekEvent = gst_event_new_seek(m_data.rate, GST_FORMAT_TIME, static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE), GST_SEEK_TYPE_SET, position, GST_SEEK_TYPE_END, 0);
         } else {
-            seekEvent = gst_event_new_seek(m_data.rate, GST_FORMAT_TIME, static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE), GST_SEEK_TYPE_SET, 0, GST_SEEK_TYPE_SET, position);
+            seekEvent = gst_event_new_seek(m_data.rate, GST_FORMAT_TIME, static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE), GST_SEEK_TYPE_SET, position, GST_SEEK_TYPE_SET, 0);
         }
 
         // send the event
@@ -478,7 +488,11 @@ void Player::update_rate(bool force)
 
     // update pitch tempo (this makes mp3 files work for some reason)
     g_object_set(m_data.pitch, "tempo", m_data.rate, nullptr);
-    m_durationValid = false;
+
+    if (m_playbackType != MEDIA_DURATION_STATIC)
+    {
+        m_durationValid = false;
+    }
 
     g_print("Current rate: %g\n", m_data.rate);
 
@@ -676,5 +690,22 @@ void Player::setPlaybackType(const Player::MediaPlaybackType type)
     if (type != m_playbackType)
     {
         m_playbackType = type;
+    }
+}
+
+void Player::setFirstDuration(const int& val)
+{
+    if (val != m_firstValid)
+    {
+        m_firstValid = val;
+    }
+}
+
+void Player::setShouldSeek(const bool& val)
+{
+    if (val != m_shouldSeek)
+    {
+        m_shouldSeek = val;
+        Q_EMIT shouldSeekChanged();
     }
 }

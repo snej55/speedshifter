@@ -54,6 +54,7 @@ class Player : public QObject
     Q_PROPERTY(int duration READ getDuration WRITE setDuration NOTIFY durationChanged)
     Q_PROPERTY(int timeElapsed READ getTimeElapsed WRITE setTimeElapsed NOTIFY timeElapsedChanged)
     Q_PROPERTY(bool playing READ getPlaying NOTIFY playingChanged)
+    Q_PROPERTY(bool shouldSeek READ getShouldSeek WRITE setShouldSeek NOTIFY shouldSeekChanged)
     QML_ELEMENT
 
 public:
@@ -127,12 +128,19 @@ public:
     void setPlaybackType(const Player::MediaPlaybackType type);
     [[nodiscard]] Player::MediaPlaybackType getPlaybackType() const {return m_playbackType;}
 
+    void setFirstDuration(const int& val);
+    [[nodiscard]] int getFirstDuration() const {return m_firstValid;}
+
+    void setShouldSeek(const bool& val);
+    [[nodiscard]] bool getShouldSeek() const {return m_shouldSeek;}
+
 Q_SIGNALS:
     void filePathChanged();
     void playbackSpeedChanged();
     void durationChanged();
     void timeElapsedChanged();
     void playingChanged();
+    void shouldSeekChanged();
 
 public Q_SLOTS:
     void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
@@ -149,7 +157,9 @@ private:
 
     int m_timeElapsed{0}; // seconds
     int m_duration{0}; // in seconds
+    int m_firstValid{0}; // first valid duration
     bool m_durationValid{false};
+    bool m_shouldSeek{false};
 
     bool m_seekingEnabled{true};
     int m_targetSeek{0}; // seek buffer
