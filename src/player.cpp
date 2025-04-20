@@ -460,7 +460,7 @@ void Player::onMediaStatusChanged(QMediaPlayer::MediaStatus status)
     }
 }
 
-void Player::getMetaData(QMediaPlayer* player) const
+void Player::getMetaData(QMediaPlayer* player)
 {
     std::cout << "Fetching metadata...\n";
     // get list of keys for available metadata
@@ -480,6 +480,81 @@ void Player::getMetaData(QMediaPlayer* player) const
     std::cout << "FileFormat: " << static_cast<int>(fileType.value<QMediaFormat::FileFormat>()) << '\n';
     QVariant audioCodec {metadata.value(QMediaMetaData::AudioCodec)};
     std::cout << "AudioCodec: " << static_cast<int>(audioCodec.value<QMediaFormat::AudioCodec>()) << '\n';
+    selectPlaybackType(fileType, audioCodec);
+}
+
+void Player::selectPlaybackType(QVariant fileType, QVariant audioType)
+{
+    QMediaFormat::FileFormat fileFormat {fileType.value<QMediaFormat::FileFormat>()};
+    QMediaFormat::AudioCodec audioCodec {audioType.value<QMediaFormat::AudioCodec>()};
+
+    Player::MediaPlaybackType type;
+    switch (audioCodec)
+    {
+        case QMediaFormat::AudioCodec::WMA:
+            type = MEDIA_DURATION_VARIABLE;
+            break;
+        case QMediaFormat::AudioCodec::Wave:
+            type = MEDIA_DURATION_VARIABLE;
+            break;
+        case QMediaFormat::AudioCodec::MP3:
+            type = MEDIA_DURATION_STATIC;
+            break;
+        case QMediaFormat::AudioCodec::Unspecified:
+            // try using container type instead
+            type = selectFromFileType(fileFormat);
+            break;
+        default:
+            type = MEDIA_TYPE_NONE;
+            break;
+    }
+    setPlaybackType(type);
+
+    // output type selected
+    switch (m_playbackType)
+    {
+        case MEDIA_DURATION_STATIC:
+            std::cout << "Selected type: MEDIA_DURATION_STATIC" << std::endl;
+            break;
+        case MEDIA_DURATION_VARIABLE:
+            std::cout << "Selected type: MEDIA_DURATION_VARIABLE" << std::endl;
+            break;
+        default:
+            std::cout << "Selected type: MEDIA_TYPE_NONE" << std::endl;
+            break;
+    }
+}
+
+Player::MediaPlaybackType Player::selectFromFileType(QMediaFormat::FileFormat format) const
+{
+    // uses container type instead of audio codec
+    Player::MediaPlaybackType type;
+    switch (format)
+    {
+        case QMediaFormat::FileFormat::WMV:
+            type = MEDIA_DURATION_VARIABLE;
+            break;
+        case QMediaFormat::FileFormat::WMA:
+            type = MEDIA_DURATION_VARIABLE;
+            break;
+        case QMediaFormat::FileFormat::Wave:
+            type = MEDIA_DURATION_VARIABLE;
+            break;
+        case QMediaFormat::FileFormat::MP3:
+            type = MEDIA_DURATION_STATIC;
+            break;
+        case QMediaFormat::FileFormat::MPEG4:
+            type = MEDIA_DURATION_STATIC;
+            break;
+        case QMediaFormat::FileFormat::UnspecifiedFormat:
+            std::cout << "File format and audio format are both unspecified. Selecting MEDIA_TYPE_NONE." << std::endl;
+            type = MEDIA_TYPE_NONE;
+            break;
+        default:
+            type = MEDIA_TYPE_NONE;
+            break;
+    }
+    return type;
 }
 
 // --------------------------- getters & setters --------------------------- //

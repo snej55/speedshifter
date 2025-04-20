@@ -57,6 +57,13 @@ class Player : public QObject
     QML_ELEMENT
 
 public:
+    enum MediaPlaybackType
+    {
+        MEDIA_TYPE_NONE,
+        MEDIA_DURATION_STATIC,
+        MEDIA_DURATION_VARIABLE
+    };
+
     explicit Player(QObject* parent = nullptr);
     ~Player();
 
@@ -82,9 +89,10 @@ public:
     void update_rate(bool force=false);
 
     // get's metadata from audio file
-    void getMetaData(QMediaPlayer* player) const;
+    void getMetaData(QMediaPlayer* player);
     // selects media playback type using container type and audio codec (static or variable duration)
-    void selectPlaybackType(QVariant fileType, QVariant audioCodec);
+    void selectPlaybackType(QVariant fileType, QVariant audioType);
+    Player::MediaPlaybackType selectFromFileType(QMediaFormat::FileFormat format) const;
 
     [[nodiscard]] QString filePath() const;
     void setFilePath(const QString& val);
@@ -115,13 +123,6 @@ public:
 
     void setDurationValid(const bool& val);
     [[nodiscard]] bool getDurationValid() const {return m_durationValid;}
-
-    enum MediaPlaybackType
-    {
-        MEDIA_TYPE_NONE,
-        MEDIA_DURATION_STATIC,
-        MEDIA_DURATION_VARIABLE
-    };
 
     void setPlaybackType(const Player::MediaPlaybackType type);
     [[nodiscard]] Player::MediaPlaybackType getPlaybackType() const {return m_playbackType;}
