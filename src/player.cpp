@@ -81,6 +81,7 @@ void Player::load()
     setPlaying(false);
     setTimeElapsed(0);
     setDuration(0);
+    setDurationValid(false);
 
     free();
 
@@ -286,14 +287,27 @@ gboolean Player::update_player(StreamData *data)
     // if it's unknown query stream duration
     if (!GST_CLOCK_TIME_IS_VALID(data->duration))
     {
-        if (!gst_element_query_duration(data->playbin, GST_FORMAT_TIME, &data->duration))
+        if (!player->getDurationValid())
         {
-            g_printerr("Could not query duration.\n");
-            player->setDurationValid(false);
-        } else {
-            player->setDuration(static_cast<int>((gdouble)data->duration / GST_SECOND));
-            player->setDurationValid(true);
+            data->rate = 1.0;
+            player->update_rate(true);
+            std::cout << "Querying duration...\n";
+            if (!gst_element_query_duration(data->playbin, GST_FORMAT_TIME, &data->duration))
+            {
+                g_printerr("Could not query duration.\n");
+                player->setDurationValid(false);
+            } else {
+                if (!player->getDurationValid())
+                {
+                    player->setDuration(static_cast<int>((gdouble)data->duration / GST_SECOND));
+                    player->setDurationValid(true);
+
+                }
+            }
+            data->rate = static_cast<double>(player->playbackSpeed());
+            player->update_rate(true);
         }
+
     }
 
     g_print("Position %" GST_TIME_FORMAT " / %" GST_TIME_FORMAT "\r", GST_TIME_ARGS(current),
@@ -384,13 +398,16 @@ void Player::seek(const int& pos, bool force, bool update_rate)
 }
 
 // sends a seek event to update playback rate
-void Player::update_rate()
+void Player::update_rate(bool force)
 {
-    constexpr double rateChangeDelay{0.2};
-    if (m_updateRateTimer.getTime() < rateChangeDelay)
+    if (!force)
     {
-        m_updateRate = true;
-        return;
+        constexpr double rateChangeDelay{0.2};
+        if (m_updateRateTimer.getTime() < rateChangeDelay)
+        {
+            m_updateRate = true;
+            return;
+        }
     }
 
     if (!m_data.seek_enabled)

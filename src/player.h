@@ -77,7 +77,7 @@ public:
     bool isSeeking();
 
     // sends a seek event to change rate
-    void update_rate();
+    void update_rate(bool force=false);
 
     [[nodiscard]] QString filePath() const;
     void setFilePath(const QString& val);
