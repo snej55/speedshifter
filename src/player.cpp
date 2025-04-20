@@ -105,9 +105,8 @@ void Player::load()
     m_data.convert = gst_element_factory_make("audioconvert", "convert");
     m_data.resample = gst_element_factory_make("audioresample", "resample");
     m_data.sink = gst_element_factory_make("autoaudiosink", "audio_sink");
-    m_data.src = gst_element_factory_make("autoaudiosrc", "audio_src");
 
-    if (!m_data.playbin || !m_data.scaletempo || !m_data.convert || !m_data.resample || !m_data.sink || !m_data.src)
+    if (!m_data.playbin || !m_data.scaletempo || !m_data.convert || !m_data.resample || !m_data.sink)
     {
         std::cout << "Not all elements could be created\n";
         return;
