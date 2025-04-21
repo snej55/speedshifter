@@ -1,2 +1,0 @@
-/home/jenskromdijk/local/bin/speedshifter
-/home/jenskromdijk/local/share/applications/org.speedshifter.desktop
