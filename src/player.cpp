@@ -68,9 +68,15 @@ void Player::free()
     if (!m_freed)
     {
         // free objects
-        gst_object_unref(m_bus);
-        gst_element_set_state(m_data.playbin, GST_STATE_NULL);
-        gst_object_unref(m_data.playbin);
+        if (m_bus != NULL)
+        {
+            gst_object_unref(m_bus);
+        }
+        if (m_data.playbin != NULL)
+        {
+            gst_element_set_state(m_data.playbin, GST_STATE_NULL);
+            gst_object_unref(m_data.playbin);
+        }
         m_data = StreamData{};
         m_bus = nullptr;
         std::cout << "Unreferenced objects" << std::endl;
