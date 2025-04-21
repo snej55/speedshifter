@@ -527,7 +527,7 @@ void Player::getMetaData(QMediaPlayer* player)
     selectPlaybackType(fileType, audioCodec);
 }
 
-void Player::selectPlaybackType(QVariant fileType, QVariant audioType)
+void Player::selectPlaybackType(const QVariant& fileType, const QVariant& audioType)
 {
     QMediaFormat::FileFormat fileFormat {fileType.value<QMediaFormat::FileFormat>()};
     QMediaFormat::AudioCodec audioCodec {audioType.value<QMediaFormat::AudioCodec>()};

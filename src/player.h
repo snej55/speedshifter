@@ -95,8 +95,8 @@ public:
     // get's metadata from audio file
     void getMetaData(QMediaPlayer* player);
     // selects media playback type using container type and audio codec (static or variable duration)
-    void selectPlaybackType(QVariant fileType, QVariant audioType);
-    Player::MediaPlaybackType selectFromFileType(QMediaFormat::FileFormat format) const;
+    void selectPlaybackType(const QVariant& fileType, const QVariant& audioType);
+    [[nodiscard]] Player::MediaPlaybackType selectFromFileType(QMediaFormat::FileFormat format) const;
 
     [[nodiscard]] QString filePath() const;
     void setFilePath(const QString& val);
