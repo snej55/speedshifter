@@ -1,8 +1,5 @@
+/.kdev4/
 /build/
-*.kdev4
-/.cache/
-/media/
 /.idea/
 /.vscode/
-.clang-format
 speedshifter.kdev4
