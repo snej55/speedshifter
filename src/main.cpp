@@ -7,6 +7,8 @@
 #include <QQuickStyle>
 #include <QUrl>
 #include <QtQml>
+#include <QIcon>
+#include <QString>
 
 #include "player.h"
 
@@ -23,6 +25,7 @@ int main(int argc, char* argv[])
     KLocalizedString::setApplicationDomain("speedshifter");
     QApplication::setApplicationName(QStringLiteral("Speed Shifter"));
     QApplication::setDesktopFileName(QStringLiteral("org.speedshifter.desktop"));
+    QApplication::setWindowIcon(QIcon(QStringLiteral(":/icons/icon.png")));
 
     QApplication::setStyle(QStringLiteral("breeze"));
     if (qEnvironmentVariableIsEmpty("QT_QUICK_CONTROLS_STYLE")) {

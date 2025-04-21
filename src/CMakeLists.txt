@@ -5,6 +5,10 @@ ecm_add_qml_module(speedshifter
     org.speedshifter
 )
 
+set(CMAKE_AUTORCC ON)
+
+qt_add_resources(SOURCES resources.qrc)
+
 target_sources(speedshifter
     PRIVATE
     main.cpp
@@ -17,6 +21,7 @@ target_sources(speedshifter
 ecm_target_qml_sources(speedshifter
     SOURCES
     Main.qml
+    resources.qrc
 )
 
 target_link_libraries(speedshifter
