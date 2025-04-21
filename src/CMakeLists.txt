@@ -2,7 +2,7 @@ add_executable(speedshifter)
 
 ecm_add_qml_module(speedshifter
     URI
-    org.kde.speedshifter
+    org.speedshifter
 )
 
 target_sources(speedshifter

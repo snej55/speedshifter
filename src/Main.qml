@@ -6,7 +6,7 @@ import QtQuick.Controls as Controls
 import QtQuick.Dialogs
 import org.kde.kirigami as Kirigami
 
-import org.kde.speedshifter 1.0
+import org.speedshifter 1.0
 
 // basic features required for kirigami application
 Kirigami.ApplicationWindow {

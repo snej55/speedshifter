@@ -12,7 +12,7 @@
 
 void registerPlayer(Player& player)
 {
-    qmlRegisterSingletonInstance<Player>("org.kde.speedshifter", 1, 0, "Player", &player);
+    qmlRegisterSingletonInstance<Player>("org.speedshifter", 1, 0, "Player", &player);
 }
 
 // basic initialization code
@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
     QApplication app(argc, argv);
     KLocalizedString::setApplicationDomain("speedshifter");
     QApplication::setApplicationName(QStringLiteral("Speed Shifter"));
-    QApplication::setDesktopFileName(QStringLiteral("org.kde.speedshifter.desktop"));
+    QApplication::setDesktopFileName(QStringLiteral("org.speedshifter.desktop"));
 
     QApplication::setStyle(QStringLiteral("breeze"));
     if (qEnvironmentVariableIsEmpty("QT_QUICK_CONTROLS_STYLE")) {
@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
     KAboutData::setApplicationData(aboutData);
 
     qmlRegisterSingletonType(
-        "org.kde.speedshifter",
+        "org.speedshifter",
         1, 0, // major/minor versions
         "About",
         [](QQmlEngine* engine, QJSEngine*) -> QJSValue {
@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
     player.init(argc, argv);
 
     engine.rootContext()->setContextObject(new KLocalizedContext(&engine));
-    engine.loadFromModule("org.kde.speedshifter", "Main");
+    engine.loadFromModule("org.speedshifter", "Main");
 
     if (engine.rootObjects().isEmpty()) {
         return -1;

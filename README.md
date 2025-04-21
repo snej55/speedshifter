@@ -15,6 +15,7 @@ A practice tool for musicians to slow down audio tracks whilst maintaining corre
 - [ ] Make launchable
 - [ ] Icon
 - [ ] Settings menu
+- [ ] Fix desktop entry
 - [ ] Add screenshots
 - [ ] Make website + download page
 - [ ] Make promo video
