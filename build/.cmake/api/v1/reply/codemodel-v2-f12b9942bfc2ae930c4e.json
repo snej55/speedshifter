@@ -1,0 +1,252 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-68539bb000d9bf56eba2.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						8,
+						19
+					]
+				},
+				{
+					"build" : "src",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-src-Debug-f5a8b50159d14d55fe01.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "src",
+					"targetIndexes" : 
+					[
+						4,
+						5,
+						6,
+						7,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17,
+						18
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1
+					],
+					"name" : "speedshifter",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17,
+						18,
+						19
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "KF6CoreAddons_QCH::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-KF6CoreAddons_QCH-Debug-a2e0db8b3b3522772e59.json",
+					"name" : "KF6CoreAddons_QCH",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "KF6I18n_QCH::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-KF6I18n_QCH-Debug-4e31f401f5af9bfea4f2.json",
+					"name" : "KF6I18n_QCH",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "KF6IconThemes_QCH::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-KF6IconThemes_QCH-Debug-c93d82233d5d55ce477d.json",
+					"name" : "KF6IconThemes_QCH",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "all_aotstats::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-all_aotstats-Debug-e779760a834d863962a2.json",
+					"name" : "all_aotstats",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "all_qmllint::@145eef247bfb46b6828c",
+					"jsonFile" : "target-all_qmllint-Debug-5002ee473b6b76f1fcec.json",
+					"name" : "all_qmllint",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "all_qmllint_json::@145eef247bfb46b6828c",
+					"jsonFile" : "target-all_qmllint_json-Debug-dbc253d7c6804e49d2ed.json",
+					"name" : "all_qmllint_json",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "all_qmllint_module::@145eef247bfb46b6828c",
+					"jsonFile" : "target-all_qmllint_module-Debug-3bfaa90a8b66a4b8301f.json",
+					"name" : "all_qmllint_module",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "all_qmltyperegistrations::@145eef247bfb46b6828c",
+					"jsonFile" : "target-all_qmltyperegistrations-Debug-a908293053ac5372e10a.json",
+					"name" : "all_qmltyperegistrations",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "fetch-translations::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-fetch-translations-Debug-6777c209988b6407f95a.json",
+					"name" : "fetch-translations",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "speedshifter::@145eef247bfb46b6828c",
+					"jsonFile" : "target-speedshifter-Debug-bf284fae9b8e70d3709e.json",
+					"name" : "speedshifter",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "speedshifter_autogen::@145eef247bfb46b6828c",
+					"jsonFile" : "target-speedshifter_autogen-Debug-22e4fc8b9831f00f9441.json",
+					"name" : "speedshifter_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "speedshifter_autogen_timestamp_deps::@145eef247bfb46b6828c",
+					"jsonFile" : "target-speedshifter_autogen_timestamp_deps-Debug-6766570dced0a7bbd749.json",
+					"name" : "speedshifter_autogen_timestamp_deps",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "speedshifter_copy_qml::@145eef247bfb46b6828c",
+					"jsonFile" : "target-speedshifter_copy_qml-Debug-4b1d29267b6e559179ef.json",
+					"name" : "speedshifter_copy_qml",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "speedshifter_copy_res::@145eef247bfb46b6828c",
+					"jsonFile" : "target-speedshifter_copy_res-Debug-cc04aaae47a834896e91.json",
+					"name" : "speedshifter_copy_res",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "speedshifter_other_files::@145eef247bfb46b6828c",
+					"jsonFile" : "target-speedshifter_other_files-Debug-6b491bfddc5abe34ec96.json",
+					"name" : "speedshifter_other_files",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "speedshifter_qmllint::@145eef247bfb46b6828c",
+					"jsonFile" : "target-speedshifter_qmllint-Debug-be816e7bed336b83c10c.json",
+					"name" : "speedshifter_qmllint",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "speedshifter_qmllint_json::@145eef247bfb46b6828c",
+					"jsonFile" : "target-speedshifter_qmllint_json-Debug-a90cdaea548bf8193313.json",
+					"name" : "speedshifter_qmllint_json",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "speedshifter_qmllint_module::@145eef247bfb46b6828c",
+					"jsonFile" : "target-speedshifter_qmllint_module-Debug-29a531a2470f8a948237.json",
+					"name" : "speedshifter_qmllint_module",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "speedshifter_qmltyperegistration::@145eef247bfb46b6828c",
+					"jsonFile" : "target-speedshifter_qmltyperegistration-Debug-85aa0ec08b2f23e8e797.json",
+					"name" : "speedshifter_qmltyperegistration",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-uninstall-Debug-10e0f507481da52e8cea.json",
+					"name" : "uninstall",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/jenskromdijk/projects/speedshifter/build",
+		"source" : "/home/jenskromdijk/projects/speedshifter"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 8
+	}
+}

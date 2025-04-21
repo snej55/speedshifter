@@ -1,0 +1,5 @@
+module org.speedshifter
+typeinfo speedshifter.qmltypes
+prefer :/qt/qml/org/speedshifter/
+Main 254.0 Main.qml
+

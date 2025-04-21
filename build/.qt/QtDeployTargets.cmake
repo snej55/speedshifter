@@ -1,0 +1,2 @@
+set(__QT_DEPLOY_TARGET_speedshifter_FILE /home/jenskromdijk/projects/speedshifter/build/bin/speedshifter)
+set(__QT_DEPLOY_TARGET_speedshifter_TYPE EXECUTABLE)

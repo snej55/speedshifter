@@ -1,0 +1,12 @@
+-I
+/home/jenskromdijk/projects/speedshifter/build/src
+-I
+/home/jenskromdijk/projects/speedshifter/build/bin
+-I
+/usr/lib/qt6/qml
+--resource
+/home/jenskromdijk/projects/speedshifter/build/src/.qt/rcc/qmake_org_speedshifter.qrc
+--resource
+/home/jenskromdijk/projects/speedshifter/build/src/.qt/rcc/speedshifter_raw_qml_0.qrc
+--module
+org.speedshifter
