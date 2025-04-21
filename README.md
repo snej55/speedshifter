@@ -12,6 +12,7 @@ A practice tool for musicians to slow down audio tracks whilst maintaining corre
 - [X] Fix mp3s
 - [X] Don't allow 0% speed
 - [X] Fix slider for mp3s
+- [ ] Make launchable
 - [ ] Settings menu
 - [ ] Add screenshots
 - [ ] Make website + download page
