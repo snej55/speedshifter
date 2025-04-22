@@ -36,12 +36,17 @@ find_package(PkgConfig) #finding pkg-config is a helper tool
 #using pkg-config to getting Gstreamer
 pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0)
 
+message("GSTREAMER_LIBRARIES: ${GSTREAMER_LIBRARIES}") # gstreamer-1.0;gobject-2.0;glib-2.0
+message("GLIB_INCLUDE_DIRS: ${GLIB_INCLUDE_DIRS}")
+message("GSTREAMER_INCLUDE_DIRS: ${GSTREAMER_INCLUDE_DIRS}")
 #including GStreamer header files directory
 include_directories(
         ${GLIB_INCLUDE_DIRS}
         ${GSTREAMER_INCLUDE_DIRS}
 )
 
+message("GLIB_LIBRARY_DIRS: ${GLIB_LIBRARY_DIRS}")
+message("GSTREAMER_LIBRARY_DIRS: ${GSTREAMER_LIBRARY_DIRS}")
 #linking GStreamer library directory
 link_directories(
         ${GLIB_LIBRARY_DIRS}
