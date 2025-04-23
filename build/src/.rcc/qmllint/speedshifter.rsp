@@ -1,0 +1,14 @@
+--bare
+-I
+C:/CraftRoot/speedshifter/build/src
+-I
+C:/CraftRoot/speedshifter/build/bin
+-I
+C:/msys64/ucrt64/share/qt6/qml
+--resource
+C:/CraftRoot/speedshifter/build/src/.qt/rcc/qmake_org_speedshifter.qrc
+--resource
+C:/CraftRoot/speedshifter/build/src/.qt/rcc/speedshifter_raw_qml_0.qrc
+--resource
+C:/CraftRoot/speedshifter/build/src/.qt/rcc/speedshifter_raw_qml_1.qrc
+C:/CraftRoot/speedshifter/src/Main.qml

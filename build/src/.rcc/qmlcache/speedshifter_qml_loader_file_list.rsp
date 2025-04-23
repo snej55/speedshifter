@@ -1,0 +1,7 @@
+--resource
+C:/CraftRoot/speedshifter/build/src/.qt/rcc/qmake_org_speedshifter.qrc
+--resource
+C:/CraftRoot/speedshifter/build/src/.qt/rcc/speedshifter_raw_qml_0.qrc
+--resource
+C:/CraftRoot/speedshifter/build/src/.qt/rcc/speedshifter_raw_qml_1.qrc
+/qt/qml/org/speedshifter/Main.qml

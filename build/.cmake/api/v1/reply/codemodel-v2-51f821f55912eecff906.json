@@ -1,0 +1,234 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-33125bd473046a21e51a.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						5,
+						6,
+						17
+					]
+				},
+				{
+					"build" : "src",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-src-Debug-74a8e7b5d8f5ff6d7899.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "src",
+					"targetIndexes" : 
+					[
+						1,
+						2,
+						3,
+						4,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1
+					],
+					"name" : "speedshifter",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "all_aotstats::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-all_aotstats-Debug-3f405b0703592c1a6d2f.json",
+					"name" : "all_aotstats",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "all_qmllint::@145eef247bfb46b6828c",
+					"jsonFile" : "target-all_qmllint-Debug-039ba98014a1e6b0adbd.json",
+					"name" : "all_qmllint",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "all_qmllint_json::@145eef247bfb46b6828c",
+					"jsonFile" : "target-all_qmllint_json-Debug-f9eade92f2f0c7b55ce4.json",
+					"name" : "all_qmllint_json",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "all_qmllint_module::@145eef247bfb46b6828c",
+					"jsonFile" : "target-all_qmllint_module-Debug-bc8092d400e668f6c762.json",
+					"name" : "all_qmllint_module",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "all_qmltyperegistrations::@145eef247bfb46b6828c",
+					"jsonFile" : "target-all_qmltyperegistrations-Debug-ff04e55041b67b6a92b0.json",
+					"name" : "all_qmltyperegistrations",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "fetch-translations::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-fetch-translations-Debug-5a5c0ef0248cbf6021f8.json",
+					"name" : "fetch-translations",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "module_speedshifter_aotstats_target::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-module_speedshifter_aotstats_target-Debug-4b57ea84428e9d055553.json",
+					"name" : "module_speedshifter_aotstats_target",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "speedshifter::@145eef247bfb46b6828c",
+					"jsonFile" : "target-speedshifter-Debug-49e86ae3549ccf742e04.json",
+					"name" : "speedshifter",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "speedshifter_autogen::@145eef247bfb46b6828c",
+					"jsonFile" : "target-speedshifter_autogen-Debug-ceed1fd6e6ac691156c6.json",
+					"name" : "speedshifter_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "speedshifter_autogen_timestamp_deps::@145eef247bfb46b6828c",
+					"jsonFile" : "target-speedshifter_autogen_timestamp_deps-Debug-17846d13fa5f5e197f02.json",
+					"name" : "speedshifter_autogen_timestamp_deps",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "speedshifter_copy_qml::@145eef247bfb46b6828c",
+					"jsonFile" : "target-speedshifter_copy_qml-Debug-13ba30027d2e00ddbd76.json",
+					"name" : "speedshifter_copy_qml",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "speedshifter_copy_res::@145eef247bfb46b6828c",
+					"jsonFile" : "target-speedshifter_copy_res-Debug-b1de99a9eb1ad84594e1.json",
+					"name" : "speedshifter_copy_res",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "speedshifter_other_files::@145eef247bfb46b6828c",
+					"jsonFile" : "target-speedshifter_other_files-Debug-79c7848445e0fd254631.json",
+					"name" : "speedshifter_other_files",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "speedshifter_qmllint::@145eef247bfb46b6828c",
+					"jsonFile" : "target-speedshifter_qmllint-Debug-41d3f68ad78835902312.json",
+					"name" : "speedshifter_qmllint",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "speedshifter_qmllint_json::@145eef247bfb46b6828c",
+					"jsonFile" : "target-speedshifter_qmllint_json-Debug-3b19b2f4f5a630253ea2.json",
+					"name" : "speedshifter_qmllint_json",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "speedshifter_qmllint_module::@145eef247bfb46b6828c",
+					"jsonFile" : "target-speedshifter_qmllint_module-Debug-cc8b71c50bea2e62a3c7.json",
+					"name" : "speedshifter_qmllint_module",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "speedshifter_qmltyperegistration::@145eef247bfb46b6828c",
+					"jsonFile" : "target-speedshifter_qmltyperegistration-Debug-c5c3282da0749c7b851e.json",
+					"name" : "speedshifter_qmltyperegistration",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-uninstall-Debug-4ef20032ef85b59a36da.json",
+					"name" : "uninstall",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "C:/CraftRoot/speedshifter/build",
+		"source" : "C:/CraftRoot/speedshifter"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 8
+	}
+}
