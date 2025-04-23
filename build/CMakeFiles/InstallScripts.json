@@ -1,8 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"C:/CraftRoot/speedshifter/build/cmake_install.cmake",
-		"C:/CraftRoot/speedshifter/build/src/cmake_install.cmake"
-	],
-	"Parallel" : false
-}

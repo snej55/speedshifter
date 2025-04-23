@@ -1,6 +1,0 @@
-<RCC>
-  <qresource prefix="/">
-    <file alias="/qt/qml/org/speedshifter">C:/CraftRoot/speedshifter/build/bin/org/speedshifter</file>
-
-  </qresource>
-</RCC>

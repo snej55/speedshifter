@@ -1,2 +1,0 @@
-/ucrt64/bin/speedshifter.exe
-/ucrt64/bin/data/applications/org.speedshifter.desktop
