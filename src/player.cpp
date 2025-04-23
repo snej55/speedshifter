@@ -128,11 +128,11 @@ void Player::load()
     m_data.sink = gst_element_factory_make("autoaudiosink", "audio_sink");
     m_data.pitch = gst_element_factory_make("pitch", "pitch");
 
-    if (!m_data.playbin || !m_data.scaletempo || !m_data.convert || !m_data.resample || !m_data.sink || !m_data.pitch)
-    {
-        std::cout << "Not all elements could be created\n";
-        return;
-    }
+    // if (!m_data.playbin || !m_data.scaletempo || !m_data.convert || !m_data.resample || !m_data.sink || !m_data.pitch)
+    // {
+    //     std::cout << "Not all elements could be created\n";
+    //     return;
+    // }
 
     bool failed{false};
     if (!m_data.playbin)
@@ -142,9 +142,31 @@ void Player::load()
     }
     if (!m_data.scaletempo)
     {
-        std::cout << "Scaletempo element could not be created!\n"
+        std::cout << "Scaletempo element could not be created!\n";
+        failed = true;
     }
-
+    if (!m_data.convert)
+    {
+        std::cout << "Audioconvert element could not be created!\n";
+        failed = true;
+    }
+    if (!m_data.resample)
+    {
+        std::cout << "Resample element could not be created!\n";
+        failed = true;
+    }
+    if (!m_data.sink)
+    {
+        std::cout << "Audio sink element could not be created!\n";
+        failed = true;
+    }
+    if (!m_data.pitch)
+    {
+        std::cout << "Pitch element could not be created!\n";
+        failed = true;
+    }
+    if (failed)
+        return;
 
     std::cout << "Created playbin object!\n";
 
