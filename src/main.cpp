@@ -12,6 +12,8 @@
 
 #include "player.h"
 
+#include <iostream>
+
 void registerPlayer(Player& player)
 {
     qmlRegisterSingletonInstance<Player>("org.speedshifter", 1, 0, "Player", &player);
@@ -20,6 +22,7 @@ void registerPlayer(Player& player)
 // basic initialization code
 int main(int argc, char* argv[])
 {
+    std::cout << "Hello world!\n";
     KIconTheme::initTheme();
     QApplication app(argc, argv);
     KLocalizedString::setApplicationDomain("speedshifter");

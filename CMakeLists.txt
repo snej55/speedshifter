@@ -33,20 +33,33 @@ find_package(KF6 REQUIRED COMPONENTS
 
 find_package(PkgConfig) #finding pkg-config is a helper tool
 
-#using pkg-config to getting Gstreamer
-pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0)
+if (CMAKE_SYSTEM MATCHES Linux)
+    # using pkg-config to getting Gstreamer
+# set(PKG_CONFIG_PATH )
+    pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0)
 
-#including GStreamer header files directory
-include_directories(
-        ${GLIB_INCLUDE_DIRS}
-        ${GSTREAMER_INCLUDE_DIRS}
-)
+    #including GStreamer header files directory
+    include_directories(
+            ${GLIB_INCLUDE_DIRS}
+            ${GSTREAMER_INCLUDE_DIRS}
+    )
 
-#linking GStreamer library directory
-link_directories(
-        ${GLIB_LIBRARY_DIRS}
-        ${GSTREAMER_LIBRARY_DIRS}
-)
+    #linking GStreamer library directory
+    link_directories(
+            ${GLIB_LIBRARY_DIRS}
+            ${GSTREAMER_LIBRARY_DIRS}
+    )
+elseif(CMAKE_SYSTEM MATCHES Windows)
+    include_directories(include)
+    include_directories(include/glib-2.0)
+    include_directories(lib/glib-2.0/include)
+    include_directories(include/gstreamer-1.0)
+    link_directories(lib)
+    link_directories(lib/gio)
+    link_directories(lib/graphene-1.0)
+    link_directories(lib/gstreamer-1.0)
+    link_directories(lib/glib-2.0)
+endif()
 
 ecm_find_qmlmodule(org.kde.kirigami REQUIRED)
 

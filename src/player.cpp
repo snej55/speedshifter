@@ -134,6 +134,18 @@ void Player::load()
         return;
     }
 
+    bool failed{false};
+    if (!m_data.playbin)
+    {
+        std::cout << "Playbin element could not be created!\n";
+        failed = true;
+    }
+    if (!m_data.scaletempo)
+    {
+        std::cout << "Scaletempo element could not be created!\n"
+    }
+
+
     std::cout << "Created playbin object!\n";
 
     // load URI
