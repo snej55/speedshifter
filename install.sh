@@ -1,3 +1,4 @@
+#!/usr/bin/bash
 # install kirigami packages
 declare -A osInfo;
 osInfo[/etc/redhat-release]="sudo dnf install @development-tools @development-libs cmake extra-cmake-modules kf6-kirigami2-devel kf6-ki18n-devel kf6-kcoreaddons-devel kf6-kiconthemes-devel qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qtquickcontrols2-devel kf6-qqc2-desktop-style -y"
