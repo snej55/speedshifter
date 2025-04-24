@@ -2,6 +2,8 @@
 
 A practice tool for musicians to slow down audio tracks whilst maintaining correct pitch.
 
+[https://jensk.asleep.pw/speedshifter/speedshifter.html](https://jensk.asleep.pw/speedshifter/speedshifter.html)
+
 ## TODO:
 
 - [X] Add file dialog
