@@ -1,3 +1,3 @@
-#!/usr/bin/fish
-cmake --install build/
+#!/usr/bin/bash
+sudo cmake --install build/
 speedshifter
