@@ -16,7 +16,7 @@
 
 void registerPlayer(Player& player)
 {
-    qmlRegisterSingletonInstance<Player>("org.speedshifter", 1, 0, "Player", &player);
+    qmlRegisterSingletonInstance<Player>("org.speedshifter", 0, 1, "Player", &player);
 }
 
 // basic initialization code
@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
     KAboutData aboutData {
         QStringLiteral("speedshifter"),
         i18nc("@title", "Speed Shifter"),
-        QStringLiteral("1.0"),
+        QStringLiteral("0.1"),
         i18n("A practice tool to adjust the speed of any audio track without altering the pitch"),
         KAboutLicense::GPL,
         i18n("(c) 2025")
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 
     qmlRegisterSingletonType(
         "org.speedshifter",
-        1, 0, // major/minor versions
+        0, 1, // major/minor versions
         "About",
         [](QQmlEngine* engine, QJSEngine*) -> QJSValue {
             return engine->toScriptValue(KAboutData::applicationData());
