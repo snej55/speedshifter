@@ -9,7 +9,7 @@ To try it out on Linux, you can clone the repo and run the install script:
 # clone the repo
 mkdir speedshifter
 cd speedshifter
-git clone https://github.com/snej55/speedshifter.git
+git clone https://github.com/snej55/speedshifter.git .
 
 # build and install
 chmod +x ./install.sh
