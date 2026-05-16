@@ -1,0 +1,15 @@
+{
+    "formatRevision": 1,
+    "modules": [
+        {
+            "moduleFiles": [
+                {
+                    "entries": [
+                    ],
+                    "filePath": "/home/jenskromdjk/projects/speedshifter/src/qml/Main.qml"
+                }
+            ],
+            "moduleId": "speedshifter(main)"
+        }
+    ]
+}

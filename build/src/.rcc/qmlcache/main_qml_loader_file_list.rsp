@@ -1,0 +1,7 @@
+--resource
+/home/jenskromdjk/projects/speedshifter/build/src/.qt/rcc/qmake_speedshifter.qrc
+--resource
+/home/jenskromdjk/projects/speedshifter/build/src/.qt/rcc/main_raw_qml_0.qrc
+--resource
+/home/jenskromdjk/projects/speedshifter/build/src/.qt/rcc/main_raw_qml_0_extra_qmldirs.qrc
+/speedshifter/qml/Main.qml

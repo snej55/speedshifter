@@ -1,0 +1,50 @@
+[
+{
+  "directory": "/home/jenskromdjk/projects/speedshifter/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_QMLINTEGRATION_LIB -DQT_QML_LIB -DQT_QUICK_LIB -I/home/jenskromdjk/projects/speedshifter/build/src/main_autogen/include -I/home/jenskromdjk/projects/speedshifter/src -isystem /usr/include/qt6/QtQml -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib64/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtQmlIntegration -isystem /usr/include/qt6/QtNetwork -isystem /usr/include/qt6/QtQuick -isystem /usr/include/qt6/QtGui -isystem /usr/include/qt6/QtOpenGL -std=gnu++17 -o src/CMakeFiles/main.dir/main_autogen/mocs_compilation.cpp.o -c /home/jenskromdjk/projects/speedshifter/build/src/main_autogen/mocs_compilation.cpp",
+  "file": "/home/jenskromdjk/projects/speedshifter/build/src/main_autogen/mocs_compilation.cpp",
+  "output": "/home/jenskromdjk/projects/speedshifter/build/src/CMakeFiles/main.dir/main_autogen/mocs_compilation.cpp.o"
+},
+{
+  "directory": "/home/jenskromdjk/projects/speedshifter/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_QMLINTEGRATION_LIB -DQT_QML_LIB -DQT_QUICK_LIB -I/home/jenskromdjk/projects/speedshifter/build/src/main_autogen/include -I/home/jenskromdjk/projects/speedshifter/src -isystem /usr/include/qt6/QtQml -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib64/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtQmlIntegration -isystem /usr/include/qt6/QtNetwork -isystem /usr/include/qt6/QtQuick -isystem /usr/include/qt6/QtGui -isystem /usr/include/qt6/QtOpenGL -std=gnu++17 -o src/CMakeFiles/main.dir/main.cpp.o -c /home/jenskromdjk/projects/speedshifter/src/main.cpp",
+  "file": "/home/jenskromdjk/projects/speedshifter/src/main.cpp",
+  "output": "/home/jenskromdjk/projects/speedshifter/build/src/CMakeFiles/main.dir/main.cpp.o"
+},
+{
+  "directory": "/home/jenskromdjk/projects/speedshifter/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_QMLINTEGRATION_LIB -DQT_QML_LIB -DQT_QUICK_LIB -I/home/jenskromdjk/projects/speedshifter/build/src/main_autogen/include -I/home/jenskromdjk/projects/speedshifter/src -isystem /usr/include/qt6/QtQml -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib64/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtQmlIntegration -isystem /usr/include/qt6/QtNetwork -isystem /usr/include/qt6/QtQuick -isystem /usr/include/qt6/QtGui -isystem /usr/include/qt6/QtOpenGL -std=gnu++17 -o src/CMakeFiles/main.dir/main_qmltyperegistrations.cpp.o -c /home/jenskromdjk/projects/speedshifter/build/src/main_qmltyperegistrations.cpp",
+  "file": "/home/jenskromdjk/projects/speedshifter/build/src/main_qmltyperegistrations.cpp",
+  "output": "/home/jenskromdjk/projects/speedshifter/build/src/CMakeFiles/main.dir/main_qmltyperegistrations.cpp.o"
+},
+{
+  "directory": "/home/jenskromdjk/projects/speedshifter/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_QMLINTEGRATION_LIB -DQT_QML_LIB -DQT_QUICK_LIB -I/home/jenskromdjk/projects/speedshifter/build/src/main_autogen/include -I/home/jenskromdjk/projects/speedshifter/src -isystem /usr/include/qt6/QtQml -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib64/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtQmlIntegration -isystem /usr/include/qt6/QtNetwork -isystem /usr/include/qt6/QtQuick -isystem /usr/include/qt6/QtGui -isystem /usr/include/qt6/QtOpenGL -std=gnu++17 -o src/CMakeFiles/main.dir/.qt/rcc/qrc_qmake_speedshifter.cpp.o -c /home/jenskromdjk/projects/speedshifter/build/src/.qt/rcc/qrc_qmake_speedshifter.cpp",
+  "file": "/home/jenskromdjk/projects/speedshifter/build/src/.qt/rcc/qrc_qmake_speedshifter.cpp",
+  "output": "/home/jenskromdjk/projects/speedshifter/build/src/CMakeFiles/main.dir/.qt/rcc/qrc_qmake_speedshifter.cpp.o"
+},
+{
+  "directory": "/home/jenskromdjk/projects/speedshifter/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_QMLINTEGRATION_LIB -DQT_QML_LIB -DQT_QUICK_LIB -I/home/jenskromdjk/projects/speedshifter/build/src/main_autogen/include -I/home/jenskromdjk/projects/speedshifter/src -isystem /usr/include/qt6/QtQml -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib64/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtQmlIntegration -isystem /usr/include/qt6/QtNetwork -isystem /usr/include/qt6/QtQuick -isystem /usr/include/qt6/QtGui -isystem /usr/include/qt6/QtOpenGL -std=gnu++17 -o src/CMakeFiles/main.dir/.rcc/qmlcache/main_qmlcache_loader.cpp.o -c /home/jenskromdjk/projects/speedshifter/build/src/.rcc/qmlcache/main_qmlcache_loader.cpp",
+  "file": "/home/jenskromdjk/projects/speedshifter/build/src/.rcc/qmlcache/main_qmlcache_loader.cpp",
+  "output": "/home/jenskromdjk/projects/speedshifter/build/src/CMakeFiles/main.dir/.rcc/qmlcache/main_qmlcache_loader.cpp.o"
+},
+{
+  "directory": "/home/jenskromdjk/projects/speedshifter/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_QMLINTEGRATION_LIB -DQT_QML_LIB -DQT_QUICK_LIB -I/home/jenskromdjk/projects/speedshifter/build/src/main_autogen/include -I/home/jenskromdjk/projects/speedshifter/src -isystem /usr/include/qt6/QtQml -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib64/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtQmlIntegration -isystem /usr/include/qt6/QtNetwork -isystem /usr/include/qt6/QtQuick -isystem /usr/include/qt6/QtGui -isystem /usr/include/qt6/QtOpenGL -std=gnu++17 -o src/CMakeFiles/main.dir/.rcc/qmlcache/main_qml/Main_qml.cpp.o -c /home/jenskromdjk/projects/speedshifter/build/src/.rcc/qmlcache/main_qml/Main_qml.cpp",
+  "file": "/home/jenskromdjk/projects/speedshifter/build/src/.rcc/qmlcache/main_qml/Main_qml.cpp",
+  "output": "/home/jenskromdjk/projects/speedshifter/build/src/CMakeFiles/main.dir/.rcc/qmlcache/main_qml/Main_qml.cpp.o"
+},
+{
+  "directory": "/home/jenskromdjk/projects/speedshifter/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_QMLINTEGRATION_LIB -DQT_QML_LIB -DQT_QUICK_LIB -I/home/jenskromdjk/projects/speedshifter/build/src/main_autogen/include -I/home/jenskromdjk/projects/speedshifter/src -isystem /usr/include/qt6/QtQml -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib64/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtQmlIntegration -isystem /usr/include/qt6/QtNetwork -isystem /usr/include/qt6/QtQuick -isystem /usr/include/qt6/QtGui -isystem /usr/include/qt6/QtOpenGL -std=gnu++17 -o src/CMakeFiles/main.dir/.qt/rcc/qrc_main_raw_qml_0.cpp.o -c /home/jenskromdjk/projects/speedshifter/build/src/.qt/rcc/qrc_main_raw_qml_0.cpp",
+  "file": "/home/jenskromdjk/projects/speedshifter/build/src/.qt/rcc/qrc_main_raw_qml_0.cpp",
+  "output": "/home/jenskromdjk/projects/speedshifter/build/src/CMakeFiles/main.dir/.qt/rcc/qrc_main_raw_qml_0.cpp.o"
+},
+{
+  "directory": "/home/jenskromdjk/projects/speedshifter/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_QMLINTEGRATION_LIB -DQT_QML_LIB -DQT_QUICK_LIB -I/home/jenskromdjk/projects/speedshifter/build/src/main_autogen/include -I/home/jenskromdjk/projects/speedshifter/src -isystem /usr/include/qt6/QtQml -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib64/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtQmlIntegration -isystem /usr/include/qt6/QtNetwork -isystem /usr/include/qt6/QtQuick -isystem /usr/include/qt6/QtGui -isystem /usr/include/qt6/QtOpenGL -std=gnu++17 -o src/CMakeFiles/main.dir/.qt/rcc/qrc_main_raw_qml_0_extra_qmldirs.cpp.o -c /home/jenskromdjk/projects/speedshifter/build/src/.qt/rcc/qrc_main_raw_qml_0_extra_qmldirs.cpp",
+  "file": "/home/jenskromdjk/projects/speedshifter/build/src/.qt/rcc/qrc_main_raw_qml_0_extra_qmldirs.cpp",
+  "output": "/home/jenskromdjk/projects/speedshifter/build/src/CMakeFiles/main.dir/.qt/rcc/qrc_main_raw_qml_0_extra_qmldirs.cpp.o"
+}
+]
