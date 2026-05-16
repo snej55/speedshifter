@@ -1,8 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"/home/jenskromdjk/projects/speedshifter/build/cmake_install.cmake",
-		"/home/jenskromdjk/projects/speedshifter/build/src/cmake_install.cmake"
-	],
-	"Parallel" : false
-}

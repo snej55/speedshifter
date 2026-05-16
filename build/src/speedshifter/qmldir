@@ -1,6 +1,0 @@
-module speedshifter
-typeinfo main.qmltypes
-prefer :/speedshifter/
-Main 1.0 qml/Main.qml
-depends QtQuick
-

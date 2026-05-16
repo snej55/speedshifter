@@ -1,8 +1,0 @@
-main_autogen/timestamp: \
-	/home/jenskromdjk/projects/speedshifter/build/src/.qt/qml_imports/main_conf.cmake \
-	/home/jenskromdjk/projects/speedshifter/src/CMakeLists.txt \
-	/home/jenskromdjk/projects/speedshifter/src/main.cpp \
-	/usr/lib64/cmake/Qt6Core/Qt6CoreConfigureFileTemplate.in \
-	/usr/lib64/cmake/Qt6Qml/Qt6QmlModuleDirMappingTemplate.qrc.in \
-	/usr/lib64/cmake/Qt6Qml/Qt6qmldirTemplate.cmake.in \
-	/usr/bin/cmake

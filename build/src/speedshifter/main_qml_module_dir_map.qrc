@@ -1,6 +1,0 @@
-<RCC>
-  <qresource prefix="/">
-    <file alias="/speedshifter">/home/jenskromdjk/projects/speedshifter/build/src/speedshifter</file>
-
-  </qresource>
-</RCC>

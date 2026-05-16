@@ -1,6 +1,0 @@
-<RCC>
-  <qresource prefix="/speedshifter/">
-    <file alias="qml/Main.qml">/home/jenskromdjk/projects/speedshifter/src/qml/Main.qml</file>
-  </qresource>
-</RCC>
-
