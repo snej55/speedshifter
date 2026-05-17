@@ -1,6 +1,15 @@
 // Created by Jens Kromdijk 23/05/2026
 
 #include "player.h"
+#include <qnamespace.h>
+
+extern "C" {
+    #include <libavformat/avformat.h>
+    #include <libavcodec/avcodec.h>
+    #include <libavutil/avutil.h>
+    #include <libswresample/swresample.h>
+    #include <libavutil/opt.h>
+}
 
 void maDataCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount)
 {
@@ -8,6 +17,7 @@ void maDataCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
     if (!player || !player->playing())
     {
         std::memset(pOutput, 0, frameCount * pDevice->playback.channels * sizeof(float));
+        return;
     }
 
     float* outputBuffer{static_cast<float*>(pOutput)};
@@ -18,63 +28,97 @@ void maDataCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
         for (std::size_t i{0}; i < samplesNeeded; ++i)
         {
             std::size_t currentIndex{player->m_readIndex.load()};
-            if (player->m_readIndex < player->m_pcmBuffer.size())
+            if (currentIndex < player->m_pcmBuffer.size())
             {
                 outputBuffer[i] = player->m_pcmBuffer[currentIndex];
                 ++player->m_readIndex;
             }
             else
             {
-                outputBuffer[i] = 0.0f;
-                player->pause();
+                std::memset(&outputBuffer[i], 0, (samplesNeeded - i) * sizeof(float));
+                player->stopPlaybackCallback();
+                break;
             }
         }
 
-        player->setPosition(
-            static_cast<float>(player->m_readIndex) / static_cast<float>(player->getChannels()) /
-            static_cast<float>(player->getSampleRate()));
+        float currentPos = static_cast<float>(player->m_readIndex.load()) / static_cast<float>(player->getChannels()) /
+            static_cast<float>(player->getSampleRate());
+        if (std::abs(currentPos - player->position()) > 0.2f)
+        {
+            player->updatePositionCallback();
+        }
         return;
     }
 
+    // convert channels and sample rate
     ma_uint64 outputFrames{frameCount};
     ma_uint64 readFrames;
     ma_result result{ma_data_converter_get_required_input_frame_count(player->getConverter(), frameCount, &readFrames)};
     if (result != MA_SUCCESS)
     {
+        // silence
         std::memset(pOutput, 0, frameCount * pDevice->playback.channels * sizeof(float));
         return;
     }
 
     std::size_t totalSamples{readFrames * player->getChannels()};
-    std::vector<float> tempBuffer(totalSamples, 0.0f);
+    std::size_t currentIndex{player->m_readIndex.load()};
 
-    std::size_t samplesLeft{player->m_pcmBuffer.size() - player->m_readIndex};
+    std::size_t samplesLeft{player->m_pcmBuffer.size() - currentIndex};
     std::size_t copySamples{std::min(totalSamples, samplesLeft)};
     if (copySamples > 0)
     {
-        std::copy(
-            player->m_pcmBuffer.begin() + player->m_readIndex,
-            player->m_pcmBuffer.begin() + player->m_readIndex + copySamples,
-            tempBuffer.begin());
-        player->m_readIndex += copySamples;
+        ma_uint64 actualFrames{copySamples / player->getChannels()};
+        ma_data_converter_process_pcm_frames(
+            player->getConverter(), player->m_pcmBuffer.data() + currentIndex, &actualFrames, pOutput, &outputFrames);
+        player->m_readIndex += (actualFrames * player->getChannels());
+
+        if (copySamples < totalSamples)
+        {
+            std::size_t samplesWritten{outputFrames * targetChannels};
+            std::size_t totalNeeded{frameCount * targetChannels};
+
+            if (samplesWritten < totalNeeded)
+            {
+                std::memset(&outputBuffer[samplesWritten], 0, (totalNeeded - samplesWritten) * sizeof(float));
+            }
+
+            player->stopPlaybackCallback();
+        }
     }
     else
     {
-        player->m_playing = false;
+        std::memset(pOutput, 0, frameCount * targetChannels * sizeof(float));
+        player->stopPlaybackCallback();
         return;
     }
 
-    ma_uint64 actualFrames{readFrames};
-    ma_data_converter_process_pcm_frames(
-        player->getConverter(), tempBuffer.data(), &actualFrames, pOutput, &outputFrames);
-    player->setPosition(
-        static_cast<float>(player->m_readIndex) / static_cast<float>(player->getChannels()) /
-        static_cast<float>(player->getSampleRate()));
+    float currentPos = static_cast<float>(player->m_readIndex.load()) / static_cast<float>(player->getChannels()) /
+        static_cast<float>(player->getSampleRate());
+    if (std::abs(currentPos - player->position()) > 0.2f)
+    {
+        player->updatePositionCallback();
+    }
 }
 
-Player::Player(QObject* parent) : QObject{parent} {}
+Player::Player(QObject* parent) : QObject{parent}
+{
+    connect(this, &Player::signalStop, this, &Player::handleStop, Qt::QueuedConnection);
+    connect(this, &Player::signalPositionUpdate, this, &Player::updatePosition, Qt::QueuedConnection);
+}
 
-Player::~Player() = default;
+Player::~Player()
+{
+    if (m_deviceInit)
+    {
+        ma_device_uninit(&m_device);
+    }
+
+    if (m_converterInit)
+    {
+        ma_data_converter_uninit(&m_converter, nullptr);
+    }
+}
 
 void Player::setFilePath(const QString& path)
 {
@@ -85,31 +129,64 @@ void Player::setFilePath(const QString& path)
     }
 }
 
+void Player::stopPlaybackCallback() { Q_EMIT signalStop(); }
+
+void Player::updatePositionCallback() { Q_EMIT signalPositionUpdate(); }
+
+void Player::handleStop() { pause(); }
+
+void Player::updatePosition()
+{
+    float pos{
+        static_cast<float>(m_readIndex.load()) / static_cast<float>(m_channels) / static_cast<float>(m_sampleRate)};
+    if (pos != m_position)
+    {
+        m_position = pos;
+        Q_EMIT positionChanged();
+    }
+}
+
+void Player::setPosition(float seconds)
+{
+    seconds = std::clamp(seconds, 0.0f, m_duration);
+
+    long targetIndex{static_cast<long>(seconds * static_cast<float>(m_channels) * static_cast<float>(m_sampleRate))};
+    targetIndex -= (targetIndex % m_channels);
+    m_readIndex.store(
+        static_cast<std::size_t>(std::clamp<long>(targetIndex, 0, static_cast<long>(m_pcmBuffer.size()))));
+
+    m_position = seconds;
+    Q_EMIT positionChanged();
+
+    if (m_deviceInit && m_converterInit)
+    {
+        ma_data_converter_reset(&m_converter);
+    }
+}
+
 void Player::play()
 {
-    m_playing = true;
-    m_updateState = true;
+    if (!m_playing)
+    {
+        m_playing = true;
+        Q_EMIT playingChanged();
+        if (m_deviceInit)
+        {
+            ma_device_start(&m_device);
+        }
+    }
 }
 
 void Player::pause()
 {
-    m_playing = false;
-    m_updateState = true;
-}
-
-void Player::update()
-{
-    if (m_updateState)
+    if (m_playing)
     {
-        if (m_playing)
-        {
-            ma_device_start(&m_device);
-        }
-        else
+        m_playing = false;
+        Q_EMIT playingChanged();
+        if (m_deviceInit)
         {
             ma_device_stop(&m_device);
         }
-        m_updateState = false;
     }
 }
 
@@ -117,33 +194,147 @@ void Player::loadFile(const QUrl& fileUrl)
 {
     pause();
 
-    ma_result result;
-    ma_decoder decoder; // temporary decoder
-
     QString filePath{fileUrl.toLocalFile()};
-    result = ma_decoder_init_file(filePath.toStdString().c_str(), nullptr, &decoder);
-    if (result != MA_SUCCESS)
+    AVFormatContext* formatContext{nullptr};
+    int ret{avformat_open_input(&formatContext, filePath.toStdString().c_str(), nullptr, nullptr)};
+    if (ret < 0)
     {
-        qWarning() << "Failed to open file: " << filePath;
+        qWarning() << "ERROR decoding media: Failed to open file: `" << filePath << "`!";
         return;
     }
 
-    m_sampleRate = decoder.outputSampleRate;
-    m_channels = decoder.outputChannels;
+    ret = avformat_find_stream_info(formatContext, nullptr);
+    if (ret < 0)
+    {
+        qWarning() << "ERROR decoding media: Failed to find stream info!";
+        avformat_close_input(&formatContext);
+        return;
+    }
 
-    // get total number of PCM frames
-    ma_uint64 totalFrames{0};
-    ma_decoder_get_length_in_pcm_frames(&decoder, &totalFrames);
+    int streamIndex{av_find_best_stream(formatContext, AVMEDIA_TYPE_AUDIO, -1, -1, nullptr, 0)};
+    if (streamIndex < 0)
+    {
+        qWarning() << "ERROR decoding media: No audio stream found in `" << filePath << "`";
+        avformat_close_input(&formatContext);
+        return;
+    }
 
-    m_pcmBuffer.resize(m_channels * totalFrames);
+    const AVStream* stream {formatContext->streams[streamIndex]};
+    const AVCodec* avDecoder{avcodec_find_decoder(stream->codecpar->codec_id)};
+    if (!avDecoder)
+    {
+        qWarning() << "ERROR decoding media: no decoder found!";
+        avformat_close_input(&formatContext);
+        return;
+    }
 
-    ma_uint64 framesRead{0};
-    ma_decoder_read_pcm_frames(&decoder, m_pcmBuffer.data(), totalFrames, &framesRead);
+    AVCodecContext* decoderCtx{avcodec_alloc_context3(avDecoder)};
+    avcodec_parameters_to_context(decoderCtx, stream->codecpar);
 
-    ma_decoder_uninit(&decoder);
+    ret = avcodec_open2(decoderCtx, avDecoder, nullptr);
+    if (ret < 0)
+    {
+        qWarning() << "ERROR decoding media: failed to open decoder!";
+        return;
+    }
+
+    m_sampleRate = decoderCtx->sample_rate;
+    m_channels = decoderCtx->ch_layout.nb_channels;
+
+    AVChannelLayout inChannelLayout {decoderCtx->ch_layout};
+    if (inChannelLayout.order == AV_CHANNEL_ORDER_UNSPEC || inChannelLayout.nb_channels == 0)
+    {
+        av_channel_layout_default(&inChannelLayout, m_channels);
+    } else {
+        av_channel_layout_copy(&inChannelLayout, &decoderCtx->ch_layout);
+    }
+
+    AVChannelLayout outChannelLayout;
+    av_channel_layout_default(&outChannelLayout, m_channels);
+
+    AVPacket* packet{av_packet_alloc()};
+    AVFrame* frame{av_frame_alloc()};
+
+    SwrContext* swrContext{swr_alloc()};
+    ret = swr_alloc_set_opts2(
+        &swrContext,
+        &outChannelLayout,
+        AV_SAMPLE_FMT_FLT,
+        m_sampleRate,
+        &inChannelLayout,
+        decoderCtx->sample_fmt,
+        m_sampleRate,
+        0, nullptr
+    );
+
+    if (ret < 0 || !swrContext)
+    {
+        qWarning() << "ERROR decoding media: Failed to allocate SwrContext options!";
+        av_packet_free(&packet);
+        av_frame_free(&frame);
+        avformat_close_input(&formatContext);
+        return;
+    }
+
+    ret = swr_init(swrContext);
+    if (ret < 0)
+    {
+        qWarning() << "ERROR decoding media: swr_init() failed!";
+        swr_free(&swrContext);
+        av_packet_free(&packet);
+        av_frame_free(&frame);
+        avformat_close_input(&formatContext);
+        return;
+    }
+
+    av_channel_layout_uninit(&inChannelLayout);
+    av_channel_layout_uninit(&outChannelLayout);
+
+    m_pcmBuffer.clear();
+    // preallocate memory if possible to prevent vector resizing too much
+    if (formatContext->duration != AV_NOPTS_VALUE)
+    {
+        double durationSec{static_cast<double>(formatContext->duration) / static_cast<double>(AV_TIME_BASE)};
+        m_pcmBuffer.reserve(static_cast<std::size_t>(durationSec * m_sampleRate * m_channels));
+    }
+
+    while (av_read_frame(formatContext, packet) >= 0)
+    {
+        if (packet->stream_index != streamIndex)
+            continue;
+
+        ret = avcodec_send_packet(decoderCtx, packet);
+        if (ret < 0 && (ret != AVERROR(EAGAIN)))
+        {
+            qWarning() << "Failed to decode frame!";
+            continue;
+        }
+
+        while (avcodec_receive_frame(decoderCtx, frame) >= 0)
+        {
+            int maxSamples{swr_get_out_samples(swrContext, frame->nb_samples)};
+            std::vector<float> tempBuffer(maxSamples * m_channels);
+
+            uint8_t* data{reinterpret_cast<uint8_t*>(tempBuffer.data())};
+            int outSamples {swr_convert(swrContext, &data, maxSamples, (const uint8_t**)frame->data, frame->nb_samples)};
+            if (outSamples > 0)
+            {
+                m_pcmBuffer.insert(m_pcmBuffer.end(), tempBuffer.begin(), tempBuffer.begin() + (outSamples * m_channels));
+            }
+        }
+
+        av_packet_unref(packet);
+    }
+
+    // tidy up
+    av_packet_free(&packet);
+    av_frame_free(&frame);
+    swr_free(&swrContext);
+    avcodec_free_context(&decoderCtx);
+    avformat_close_input(&formatContext);
 
     m_readIndex = 0;
-    m_duration = static_cast<float>(totalFrames) / m_sampleRate;
+    m_duration = static_cast<float>(m_pcmBuffer.size()) / m_sampleRate / m_channels;
     m_position = 0.0f;
 
     Q_EMIT durationChanged();

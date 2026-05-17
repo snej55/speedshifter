@@ -27,9 +27,9 @@ public:
     [[nodiscard]] QString filePath() const { return m_filePath; }
     void setFilePath(const QString& path);
 
-    [[nodiscard]] bool playing() const { return m_playing; }
+    [[nodiscard]] bool playing() const { return m_playing.load(); }
     [[nodiscard]] float position() const { return m_position; }
-    void setPosition(int seconds);
+    void setPosition(float seconds);
     [[nodiscard]] float duration() const { return m_duration; }
 
     [[nodiscard]] std::vector<float>* getPCM_Buffer() { return &m_pcmBuffer; }
@@ -47,13 +47,22 @@ public:
     Q_INVOKABLE
     void loadFile(const QUrl& fileUrl);
 
-    void update();
+    // only get called from maDataCallback
+    void stopPlaybackCallback();
+    void updatePositionCallback();
 
 signals:
     void filePathChanged();
     void playingChanged();
     void positionChanged();
     void durationChanged();
+
+    void signalStop();
+    void signalPositionUpdate();
+
+private slots:
+    void handleStop();
+    void updatePosition();
 
 private:
     QString m_filePath;
@@ -74,7 +83,6 @@ private:
     std::atomic<bool> m_playing{false};
     float m_position{0.0f};
     float m_duration{0.0f};
-    bool m_updateState{false};
 
     // setup miniaudio backend
     friend void maDataCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount);
