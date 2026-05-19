@@ -11,6 +11,28 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(miniaudio)
 
+FetchContent_Declare(
+    signalsmith_stretch_download
+    GIT_REPOSITORY https://github.com/Signalsmith-Audio/signalsmith-stretch.git
+    GIT_TAG 1.1.0
+    GIT_SHALLOW ON
+)
+
+FetchContent_Declare(
+    signalsmith_linear_download
+    GIT_REPOSITORY https://github.com/Signalsmith-Audio/linear.git
+    GIT_TAG        main
+)
+
+FetchContent_MakeAvailable(signalsmith_stretch_download signalsmith_linear_download)
+
+add_library(signalsmith-stretch INTERFACE)
+
+target_include_directories(signalsmith-stretch INTERFACE
+    ${signalsmith_stretch_download_SOURCE_DIR}
+    ${signalsmith_linear_download_SOURCE_DIR}
+)
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(AVFORMAT REQUIRED libavformat)
 pkg_check_modules(AVCODEC REQUIRED libavcodec)
@@ -39,7 +61,7 @@ target_include_directories(${BIN_NAME} PRIVATE
 )
 
 # Use the QtQuick module from Qt 6.
-target_link_libraries(${BIN_NAME} PRIVATE Qt6::Quick miniaudio ${AVFORMAT_LIBRARIES}
+target_link_libraries(${BIN_NAME} PRIVATE Qt6::Quick miniaudio signalsmith-stretch ${AVFORMAT_LIBRARIES}
     ${AVCODEC_LIBRARIES}
     ${AVUTIL_LIBRARIES}
     ${SWRESAMPLE_LIBRARIES})

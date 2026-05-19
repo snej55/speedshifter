@@ -7,12 +7,12 @@ Current Build Directory Index-Host System=0
 
 [CMake][CMake Build Directory 0]
 Build Directory Path=/home/jenskromdjk/projects/speedshifter/build
-Build Type=Debug
+Build Type=
 CMake Binary=/usr/bin/cmake
 CMake Executable=/usr/bin/cmake
 Environment Profile=
 Extra Arguments=
-Install Directory=
+Install Directory=/usr/local
 Runtime=Host System
 
 [Launch]
@@ -23,6 +23,19 @@ Configured Launch Modes=execute
 Configured Launchers=nativeAppLauncher
 Name=New Compiled Binary Launcher
 Type=Native Application
+
+[Launch][Launch Configuration 0][Data]
+Arguments=
+Dependencies=@Variant(\x00\x00\x00\t\x00\x00\x00\x00\x00)
+Dependency Action=Nothing
+EnvironmentGroup=
+Executable=file:///home/jenskromdjk/projects/speedshifter
+External Terminal=konsole --hold -e
+Kill Before Executing Again=4194304
+Project Target=speedshifter,src,main
+Use External Terminal=false
+Working Directory=
+isExecutable=false
 
 [Project]
 VersionControlSupport=kdevgit

@@ -4,11 +4,11 @@
 #include <qnamespace.h>
 
 extern "C" {
-    #include <libavformat/avformat.h>
-    #include <libavcodec/avcodec.h>
-    #include <libavutil/avutil.h>
-    #include <libswresample/swresample.h>
-    #include <libavutil/opt.h>
+#include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
+#include <libavutil/avutil.h>
+#include <libswresample/swresample.h>
+#include <libavutil/opt.h>
 }
 
 void maDataCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount)
@@ -22,6 +22,7 @@ void maDataCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
 
     float* outputBuffer{static_cast<float*>(pOutput)};
     std::size_t targetChannels{pDevice->playback.channels}; // should always be two
+
     if (!player->getConverterInit())
     {
         std::size_t samplesNeeded{frameCount * targetChannels};
@@ -118,6 +119,11 @@ Player::~Player()
     {
         ma_data_converter_uninit(&m_converter, nullptr);
     }
+
+    if (m_rbInit)
+    {
+        ma_pcm_rb_uninit(&m_ringBuffer);
+    }
 }
 
 void Player::setFilePath(const QString& path)
@@ -158,6 +164,12 @@ void Player::setPosition(float seconds)
     m_position = seconds;
     Q_EMIT positionChanged();
 
+    if (m_rbInit)
+    {
+        ma_pcm_rb_reset(&m_ringBuffer);
+        m_stretcher.reset();
+    }
+
     if (m_deviceInit && m_converterInit)
     {
         ma_data_converter_reset(&m_converter);
@@ -193,6 +205,7 @@ void Player::pause()
 void Player::loadFile(const QUrl& fileUrl)
 {
     pause();
+    setPosition(0);
 
     QString filePath{fileUrl.toLocalFile()};
     AVFormatContext* formatContext{nullptr};
@@ -219,7 +232,7 @@ void Player::loadFile(const QUrl& fileUrl)
         return;
     }
 
-    const AVStream* stream {formatContext->streams[streamIndex]};
+    const AVStream* stream{formatContext->streams[streamIndex]};
     const AVCodec* avDecoder{avcodec_find_decoder(stream->codecpar->codec_id)};
     if (!avDecoder)
     {
@@ -241,11 +254,13 @@ void Player::loadFile(const QUrl& fileUrl)
     m_sampleRate = decoderCtx->sample_rate;
     m_channels = decoderCtx->ch_layout.nb_channels;
 
-    AVChannelLayout inChannelLayout {decoderCtx->ch_layout};
+    AVChannelLayout inChannelLayout{decoderCtx->ch_layout};
     if (inChannelLayout.order == AV_CHANNEL_ORDER_UNSPEC || inChannelLayout.nb_channels == 0)
     {
         av_channel_layout_default(&inChannelLayout, m_channels);
-    } else {
+    }
+    else
+    {
         av_channel_layout_copy(&inChannelLayout, &decoderCtx->ch_layout);
     }
 
@@ -264,8 +279,8 @@ void Player::loadFile(const QUrl& fileUrl)
         &inChannelLayout,
         decoderCtx->sample_fmt,
         m_sampleRate,
-        0, nullptr
-    );
+        0,
+        nullptr);
 
     if (ret < 0 || !swrContext)
     {
@@ -316,10 +331,11 @@ void Player::loadFile(const QUrl& fileUrl)
             std::vector<float> tempBuffer(maxSamples * m_channels);
 
             uint8_t* data{reinterpret_cast<uint8_t*>(tempBuffer.data())};
-            int outSamples {swr_convert(swrContext, &data, maxSamples, (const uint8_t**)frame->data, frame->nb_samples)};
+            int outSamples{swr_convert(swrContext, &data, maxSamples, (const uint8_t**)frame->data, frame->nb_samples)};
             if (outSamples > 0)
             {
-                m_pcmBuffer.insert(m_pcmBuffer.end(), tempBuffer.begin(), tempBuffer.begin() + (outSamples * m_channels));
+                m_pcmBuffer.insert(
+                    m_pcmBuffer.end(), tempBuffer.begin(), tempBuffer.begin() + (outSamples * m_channels));
             }
         }
 
@@ -333,6 +349,8 @@ void Player::loadFile(const QUrl& fileUrl)
     avcodec_free_context(&decoderCtx);
     avformat_close_input(&formatContext);
 
+    convertPCM(m_sampleRate, m_channels);
+
     m_readIndex = 0;
     m_duration = static_cast<float>(m_pcmBuffer.size()) / m_sampleRate / m_channels;
     m_position = 0.0f;
@@ -340,13 +358,32 @@ void Player::loadFile(const QUrl& fileUrl)
     Q_EMIT durationChanged();
     Q_EMIT positionChanged();
 
+    if (m_rbInit)
+    {
+        ma_pcm_rb_uninit(&m_ringBuffer);
+        m_rbInit = false;
+    }
+
+    ma_uint32 rbFrameCapacity{static_cast<ma_uint32>(m_sampleRate * 1)}; // one second of safety storage
+    m_ringBufferStorage.resize(rbFrameCapacity * m_channels);
+
+    if (ma_pcm_rb_init(
+            ma_format_f32, m_channels, rbFrameCapacity, m_ringBufferStorage.data(), nullptr, &m_ringBuffer) !=
+        MA_SUCCESS)
+    {
+        qWarning() << "Failed to initialize internal ring buffer";
+        return;
+    }
+    m_rbInit = true;
+    m_stretcher.presetDefault(m_channels, m_sampleRate);
+
     if (!m_deviceInit)
     {
         ma_device_config deviceConfig{ma_device_config_init(ma_device_type_playback)};
-        deviceConfig.playback.format = ma_format_f32; // required for soundtouch
+        deviceConfig.playback.format = ma_format_f32;
         // fix audio settings so always good quality
-        deviceConfig.playback.channels = 2;
-        deviceConfig.sampleRate = 48000;
+        deviceConfig.playback.channels = DEVICE_CHANNELS;
+        deviceConfig.sampleRate = DEVICE_SAMPLERATE;
         deviceConfig.dataCallback = maDataCallback;
         deviceConfig.pUserData = this;
 
@@ -369,11 +406,15 @@ void Player::loadFile(const QUrl& fileUrl)
             m_converterInit = false;
         }
 
-        if (m_sampleRate != 48000 || m_channels != 2)
+        if (m_sampleRate != DEVICE_SAMPLERATE || m_channels != DEVICE_CHANNELS)
         {
+            qWarning() << "Input audio stream differs from device sample rate and channels...";
+            qWarning() << "Setting up ma_data_converter (" << static_cast<float>(m_sampleRate) * 0.001f << "kHz => "
+                       << static_cast<float>(DEVICE_SAMPLERATE) * 0.001f << "kHz, " << m_channels << " channels => "
+                       << DEVICE_CHANNELS << " channels)";
             m_converterInit = true;
-            ma_data_converter_config converterConfig{
-                ma_data_converter_config_init(ma_format_f32, ma_format_f32, m_channels, 2, m_sampleRate, 48000)};
+            ma_data_converter_config converterConfig{ma_data_converter_config_init(
+                ma_format_f32, ma_format_f32, m_channels, DEVICE_CHANNELS, m_sampleRate, DEVICE_SAMPLERATE)};
 
             if (ma_data_converter_init(&converterConfig, nullptr, &m_converter) != MA_SUCCESS)
             {
@@ -383,4 +424,54 @@ void Player::loadFile(const QUrl& fileUrl)
             }
         }
     }
+}
+
+void Player::convertPCM(const int sampleRate, const int channels)
+{
+    ma_data_converter converter;
+    ma_data_converter_config converterConfig{ma_data_converter_config_init(
+        ma_format_f32, ma_format_f32, channels, DEVICE_CHANNELS, sampleRate, DEVICE_SAMPLERATE)};
+    if (ma_data_converter_init(&converterConfig, nullptr, &converter) != MA_SUCCESS)
+    {
+        qWarning() << "Failed to initialize data converter!";
+        return;
+    }
+
+    const std::size_t totalFrames{m_pcmBuffer.size() / channels};
+
+    ma_uint64 bufferSize;
+    ma_data_converter_get_expected_output_frame_count(&converter, totalFrames, &bufferSize);
+
+    std::vector<float> tempBuffer(bufferSize * DEVICE_CHANNELS);
+
+    std::size_t inputIndex{0};
+    std::size_t writeIndex{0};
+    constexpr ma_uint64 stepSize{512};
+
+    while (inputIndex < totalFrames)
+    {
+        ma_uint64 framesIn{std::min(static_cast<ma_uint64>(totalFrames - inputIndex), stepSize)};
+        ma_uint64 framesOut{static_cast<ma_uint64>(bufferSize - writeIndex)};
+
+        const float* pInputData{m_pcmBuffer.data() + inputIndex * channels};
+        float* pOutputData{tempBuffer.data() + writeIndex * DEVICE_CHANNELS};
+
+        ma_data_converter_process_pcm_frames(&converter, pInputData, &framesIn, pOutputData, &framesOut);
+
+        inputIndex += framesIn;
+        writeIndex += framesOut;
+
+        if (framesIn == 0 && framesOut == 0)
+        {
+            break;
+        }
+    }
+
+    m_pcmBuffer.swap(tempBuffer);
+    tempBuffer.clear();
+
+    m_sampleRate = DEVICE_SAMPLERATE;
+    m_channels = DEVICE_CHANNELS;
+
+    ma_data_converter_uninit(&converter, nullptr);
 }

@@ -7,9 +7,15 @@
 #include <qqml.h>
 
 #include <miniaudio.h>
+#include <signalsmith-stretch.h>
 
 #include <vector>
 #include <atomic>
+#include <mutex>
+
+// Default: 48kHz stereo
+#define DEVICE_CHANNELS 2
+#define DEVICE_SAMPLERATE 48000
 
 class Player : public QObject
 {
@@ -51,6 +57,14 @@ public:
     void stopPlaybackCallback();
     void updatePositionCallback();
 
+    [[nodiscard]] float speed() const {return m_speed.load();};
+    Q_INVOKABLE
+    void setSpeed(float t) {m_speed.store(std::clamp(t, 0.1f, 4.f));}
+
+    [[nodiscard]] signalsmith::stretch::SignalsmithStretch<float>& getStretcher() {return m_stretcher;}
+    [[nodiscard]] ma_pcm_rb& getRingBuffer() {return m_ringBuffer;}
+    [[nodiscard]] bool getRingBufferInit() const {return m_rbInit;}
+
 signals:
     void filePathChanged();
     void playingChanged();
@@ -59,6 +73,8 @@ signals:
 
     void signalStop();
     void signalPositionUpdate();
+
+    void speedChanged();
 
 private slots:
     void handleStop();
@@ -80,12 +96,20 @@ private:
     int m_sampleRate{44100};
     int m_channels{2};
 
+    signalsmith::stretch::SignalsmithStretch<float> m_stretcher;
+    ma_pcm_rb m_ringBuffer;
+    std::vector<float> m_ringBufferStorage;
+    bool m_rbInit{false};
+    std::atomic<float> m_speed{1.0f};
+
     std::atomic<bool> m_playing{false};
     float m_position{0.0f};
     float m_duration{0.0f};
 
     // setup miniaudio backend
     friend void maDataCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount);
+
+    void convertPCM(int sampleRate, int channels);
 };
 
 #endif // SPEEDSHIFTER_PLAYER_H
