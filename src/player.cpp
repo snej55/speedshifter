@@ -349,7 +349,7 @@ void Player::loadFile(const QUrl& fileUrl)
     avcodec_free_context(&decoderCtx);
     avformat_close_input(&formatContext);
 
-    convertPCM(m_sampleRate, m_channels);
+    const bool convert{convertPCM(m_sampleRate, m_channels) < 0};
 
     m_readIndex = 0;
     m_duration = static_cast<float>(m_pcmBuffer.size()) / m_sampleRate / m_channels;
@@ -398,7 +398,7 @@ void Player::loadFile(const QUrl& fileUrl)
         }
     }
 
-    if (m_deviceInit)
+    if (m_deviceInit && convert)
     {
         if (m_converterInit)
         {
@@ -426,7 +426,7 @@ void Player::loadFile(const QUrl& fileUrl)
     }
 }
 
-void Player::convertPCM(const int sampleRate, const int channels)
+int Player::convertPCM(const int sampleRate, const int channels)
 {
     ma_data_converter converter;
     ma_data_converter_config converterConfig{ma_data_converter_config_init(
@@ -434,7 +434,7 @@ void Player::convertPCM(const int sampleRate, const int channels)
     if (ma_data_converter_init(&converterConfig, nullptr, &converter) != MA_SUCCESS)
     {
         qWarning() << "Failed to initialize data converter!";
-        return;
+        return -1;
     }
 
     const std::size_t totalFrames{m_pcmBuffer.size() / channels};
@@ -461,6 +461,7 @@ void Player::convertPCM(const int sampleRate, const int channels)
         inputIndex += framesIn;
         writeIndex += framesOut;
 
+        // if it's empty exit
         if (framesIn == 0 && framesOut == 0)
         {
             break;
@@ -474,4 +475,6 @@ void Player::convertPCM(const int sampleRate, const int channels)
     m_channels = DEVICE_CHANNELS;
 
     ma_data_converter_uninit(&converter, nullptr);
+
+    return 0;
 }

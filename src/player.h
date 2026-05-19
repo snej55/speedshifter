@@ -109,7 +109,7 @@ private:
     // setup miniaudio backend
     friend void maDataCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount);
 
-    void convertPCM(int sampleRate, int channels);
+    [[nodiscard]] int convertPCM(int sampleRate, int channels);
 };
 
 #endif // SPEEDSHIFTER_PLAYER_H
