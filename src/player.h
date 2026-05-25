@@ -12,10 +12,15 @@
 #include <vector>
 #include <atomic>
 #include <mutex>
+#include <array>
 
 // Default: 48kHz stereo
 #define DEVICE_CHANNELS 2
 #define DEVICE_SAMPLERATE 48000
+#define MAX_FRAMES 1024
+
+#define MIN_SPEED 0.2f
+#define MAX_SPEED 2.f
 
 class Player : public QObject
 {
@@ -24,6 +29,9 @@ class Player : public QObject
     Q_PROPERTY(bool playing READ playing NOTIFY playingChanged)
     Q_PROPERTY(float position READ position WRITE setPosition NOTIFY positionChanged)
     Q_PROPERTY(float duration READ duration NOTIFY durationChanged)
+    Q_PROPERTY(float speed READ speed WRITE setSpeed NOTIFY speedChanged)
+    Q_PROPERTY(float minSpeed READ minSpeed)
+    Q_PROPERTY(float maxSpeed READ maxSpeed)
     QML_ELEMENT
 
 public:
@@ -59,11 +67,12 @@ public:
 
     [[nodiscard]] float speed() const {return m_speed.load();};
     Q_INVOKABLE
-    void setSpeed(float t) {m_speed.store(std::clamp(t, 0.1f, 4.f));}
+    void setSpeed(float t) {m_speed.store(std::clamp(t, MIN_SPEED, MAX_SPEED));}
+
+    [[nodiscard]] float minSpeed() const {return m_minSpeed;}
+    [[nodiscard]] float maxSpeed() const {return m_maxSpeed;}
 
     [[nodiscard]] signalsmith::stretch::SignalsmithStretch<float>& getStretcher() {return m_stretcher;}
-    [[nodiscard]] ma_pcm_rb& getRingBuffer() {return m_ringBuffer;}
-    [[nodiscard]] bool getRingBufferInit() const {return m_rbInit;}
 
 signals:
     void filePathChanged();
@@ -96,11 +105,15 @@ private:
     int m_sampleRate{44100};
     int m_channels{2};
 
+    // Miniaudio PCM data: [R L R L R L R L] (interleaved)
+    // Signalsmith stretch input: [R R R R], [L L L L] (split data)
+    std::array<std::vector<float>, 2> m_inputBuffer{}; // input from m_pcmBuffer
+    std::array<std::vector<float>, 2> m_outputBuffer{}; // output from stretcher.processs()
+
     signalsmith::stretch::SignalsmithStretch<float> m_stretcher;
-    ma_pcm_rb m_ringBuffer;
-    std::vector<float> m_ringBufferStorage;
-    bool m_rbInit{false};
     std::atomic<float> m_speed{1.0f};
+    static constexpr float m_minSpeed{MIN_SPEED};
+    static constexpr float m_maxSpeed{MAX_SPEED};
 
     std::atomic<bool> m_playing{false};
     float m_position{0.0f};
@@ -110,6 +123,7 @@ private:
     friend void maDataCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount);
 
     [[nodiscard]] int convertPCM(int sampleRate, int channels);
+    void initBuffers();
 };
 
 #endif // SPEEDSHIFTER_PLAYER_H

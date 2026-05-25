@@ -21,8 +21,9 @@ void maDataCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
     }
 
     float* outputBuffer{static_cast<float*>(pOutput)};
-    std::size_t targetChannels{pDevice->playback.channels}; // should always be two
+    std::size_t targetChannels{pDevice->playback.channels}; // should always be stereo (DEVICE_CHANNELS)
 
+    const std::size_t startReadIndex{player->m_readIndex.load()};
     if (!player->getConverterInit())
     {
         std::size_t samplesNeeded{frameCount * targetChannels};
@@ -48,6 +49,24 @@ void maDataCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
         {
             player->updatePositionCallback();
         }
+
+        // deinterleave data
+        for (std::size_t i{0}; i < frameCount; ++i)
+        {
+            player->m_inputBuffer[0][i] = outputBuffer[i * 2];
+            player->m_inputBuffer[1][i] = outputBuffer[i * 2 + 1];
+        }
+
+        const std::size_t outputSize{frameCount * static_cast<std::size_t>(1.f / player->m_speed.load())};
+        player->m_stretcher.process(player->m_inputBuffer.data(), frameCount, player->m_outputBuffer.data(), outputSize);
+
+        for (std::size_t i{0}; i < frameCount; ++i)
+        {
+            outputBuffer[i * 2] = player->m_outputBuffer[0][i];
+            outputBuffer[i * 2 + 1] = player->m_outputBuffer[1][i];
+        }
+
+        player->m_readIndex = startReadIndex + static_cast<std::size_t>(static_cast<float>(frameCount) * player->m_speed.load());
         return;
     }
 
@@ -119,11 +138,6 @@ Player::~Player()
     {
         ma_data_converter_uninit(&m_converter, nullptr);
     }
-
-    if (m_rbInit)
-    {
-        ma_pcm_rb_uninit(&m_ringBuffer);
-    }
 }
 
 void Player::setFilePath(const QString& path)
@@ -164,11 +178,7 @@ void Player::setPosition(float seconds)
     m_position = seconds;
     Q_EMIT positionChanged();
 
-    if (m_rbInit)
-    {
-        ma_pcm_rb_reset(&m_ringBuffer);
-        m_stretcher.reset();
-    }
+    m_stretcher.reset();
 
     if (m_deviceInit && m_converterInit)
     {
@@ -358,24 +368,6 @@ void Player::loadFile(const QUrl& fileUrl)
     Q_EMIT durationChanged();
     Q_EMIT positionChanged();
 
-    if (m_rbInit)
-    {
-        ma_pcm_rb_uninit(&m_ringBuffer);
-        m_rbInit = false;
-    }
-
-    ma_uint32 rbFrameCapacity{static_cast<ma_uint32>(m_sampleRate * 1)}; // one second of safety storage
-    m_ringBufferStorage.resize(rbFrameCapacity * m_channels);
-
-    if (ma_pcm_rb_init(
-            ma_format_f32, m_channels, rbFrameCapacity, m_ringBufferStorage.data(), nullptr, &m_ringBuffer) !=
-        MA_SUCCESS)
-    {
-        qWarning() << "Failed to initialize internal ring buffer";
-        return;
-    }
-    m_rbInit = true;
-    m_stretcher.presetDefault(m_channels, m_sampleRate);
 
     if (!m_deviceInit)
     {
@@ -385,6 +377,7 @@ void Player::loadFile(const QUrl& fileUrl)
         deviceConfig.playback.channels = DEVICE_CHANNELS;
         deviceConfig.sampleRate = DEVICE_SAMPLERATE;
         deviceConfig.dataCallback = maDataCallback;
+        deviceConfig.periodSizeInFrames = MAX_FRAMES;
         deviceConfig.pUserData = this;
 
         if (ma_device_init(nullptr, &deviceConfig, &m_device) != MA_SUCCESS)
@@ -396,6 +389,9 @@ void Player::loadFile(const QUrl& fileUrl)
         {
             m_deviceInit = true;
         }
+
+        m_stretcher.presetDefault(m_channels, m_sampleRate);
+        initBuffers();
     }
 
     if (m_deviceInit && convert)
@@ -424,6 +420,16 @@ void Player::loadFile(const QUrl& fileUrl)
             }
         }
     }
+}
+
+void Player::initBuffers()
+{
+    m_inputBuffer[0].resize(MAX_FRAMES * 1.2);
+    m_inputBuffer[1].resize(MAX_FRAMES * 1.2);
+
+    constexpr std::size_t maxSize{MAX_FRAMES * static_cast<std::size_t>(1.0 / MIN_SPEED)};
+    m_outputBuffer[0].resize(maxSize * 1.2);
+    m_outputBuffer[1].resize(maxSize * 1.2);
 }
 
 int Player::convertPCM(const int sampleRate, const int channels)
