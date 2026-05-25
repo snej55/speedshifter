@@ -23,95 +23,54 @@ void maDataCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
     float* outputBuffer{static_cast<float*>(pOutput)};
     std::size_t targetChannels{pDevice->playback.channels}; // should always be stereo (DEVICE_CHANNELS)
 
-    const std::size_t startReadIndex{player->m_readIndex.load()};
-    if (!player->getConverterInit())
+    // load atomic variables
+    const std::size_t currentReadIndex{player->m_readIndex.load()};
+    const float speed{player->m_speed.load()};
+
+    // calculate frame io size
+    const std::size_t inputFrames{
+        std::max<std::size_t>(static_cast<std::size_t>(static_cast<float>(frameCount) * speed + 0.5f), 1)};
+    const std::size_t totalSize{player->m_pcmBuffer.size()};
+    const std::size_t availableSamples{currentReadIndex <= totalSize ? totalSize - currentReadIndex : 0};
+    const std::size_t availableFrames{availableSamples / targetChannels};
+    const std::size_t frames{std::min(inputFrames, availableFrames)};
+
+    // make sure buffers' capacity is big enough
+    if (player->m_inputBuffer[0].size() < inputFrames)
     {
-        std::size_t samplesNeeded{frameCount * targetChannels};
-        for (std::size_t i{0}; i < samplesNeeded; ++i)
-        {
-            std::size_t currentIndex{player->m_readIndex.load()};
-            if (currentIndex < player->m_pcmBuffer.size())
-            {
-                outputBuffer[i] = player->m_pcmBuffer[currentIndex];
-                ++player->m_readIndex;
-            }
-            else
-            {
-                std::memset(&outputBuffer[i], 0, (samplesNeeded - i) * sizeof(float));
-                player->stopPlaybackCallback();
-                break;
-            }
-        }
-
-        float currentPos = static_cast<float>(player->m_readIndex.load()) / static_cast<float>(player->getChannels()) /
-            static_cast<float>(player->getSampleRate());
-        if (std::abs(currentPos - player->position()) > 0.2f)
-        {
-            player->updatePositionCallback();
-        }
-
-        // deinterleave data
-        for (std::size_t i{0}; i < frameCount; ++i)
-        {
-            player->m_inputBuffer[0][i] = outputBuffer[i * 2];
-            player->m_inputBuffer[1][i] = outputBuffer[i * 2 + 1];
-        }
-
-        const std::size_t outputSize{frameCount * static_cast<std::size_t>(1.f / player->m_speed.load())};
-        player->m_stretcher.process(player->m_inputBuffer.data(), frameCount, player->m_outputBuffer.data(), outputSize);
-
-        for (std::size_t i{0}; i < frameCount; ++i)
-        {
-            outputBuffer[i * 2] = player->m_outputBuffer[0][i];
-            outputBuffer[i * 2 + 1] = player->m_outputBuffer[1][i];
-        }
-
-        player->m_readIndex = startReadIndex + static_cast<std::size_t>(static_cast<float>(frameCount) * player->m_speed.load());
-        return;
+        // only resize if necessary (avoid malloc on system thread)
+        player->m_inputBuffer[0].resize(inputFrames);
+        player->m_inputBuffer[1].resize(inputFrames);
     }
 
-    // convert channels and sample rate
-    ma_uint64 outputFrames{frameCount};
-    ma_uint64 readFrames;
-    ma_result result{ma_data_converter_get_required_input_frame_count(player->getConverter(), frameCount, &readFrames)};
-    if (result != MA_SUCCESS)
+    if (player->m_outputBuffer[0].size() < frameCount)
     {
-        // silence
-        std::memset(pOutput, 0, frameCount * pDevice->playback.channels * sizeof(float));
-        return;
+        player->m_outputBuffer[0].resize(frameCount);
+        player->m_outputBuffer[1].resize(frameCount);
     }
 
-    std::size_t totalSamples{readFrames * player->getChannels()};
-    std::size_t currentIndex{player->m_readIndex.load()};
-
-    std::size_t samplesLeft{player->m_pcmBuffer.size() - currentIndex};
-    std::size_t copySamples{std::min(totalSamples, samplesLeft)};
-    if (copySamples > 0)
+    // de-interleave data
+    for (std::size_t i{0}; i < inputFrames; ++i)
     {
-        ma_uint64 actualFrames{copySamples / player->getChannels()};
-        ma_data_converter_process_pcm_frames(
-            player->getConverter(), player->m_pcmBuffer.data() + currentIndex, &actualFrames, pOutput, &outputFrames);
-        player->m_readIndex += (actualFrames * player->getChannels());
-
-        if (copySamples < totalSamples)
+        if (i < frames)
         {
-            std::size_t samplesWritten{outputFrames * targetChannels};
-            std::size_t totalNeeded{frameCount * targetChannels};
-
-            if (samplesWritten < totalNeeded)
-            {
-                std::memset(&outputBuffer[samplesWritten], 0, (totalNeeded - samplesWritten) * sizeof(float));
-            }
-
-            player->stopPlaybackCallback();
+            player->m_inputBuffer[0][i] = player->m_pcmBuffer[currentReadIndex + i * targetChannels];
+            player->m_inputBuffer[1][i] = player->m_pcmBuffer[currentReadIndex + i * targetChannels + 1];
+            continue;
         }
+        player->m_inputBuffer[0][i] = 0.0f;
+        player->m_inputBuffer[1][i] = 0.0f;
     }
-    else
+
+    player->m_stretcher.process(player->m_inputBuffer.data(), inputFrames, player->m_outputBuffer.data(), frameCount);
+
+    for (std::size_t i{0}; i < frameCount; ++i)
     {
-        std::memset(pOutput, 0, frameCount * targetChannels * sizeof(float));
-        player->stopPlaybackCallback();
-        return;
+        outputBuffer[i * 2] = player->m_outputBuffer[0][i];
+        outputBuffer[i * 2 + 1] = player->m_outputBuffer[1][i];
     }
+
+    player->m_readIndex = currentReadIndex + frames * targetChannels;
 
     float currentPos = static_cast<float>(player->m_readIndex.load()) / static_cast<float>(player->getChannels()) /
         static_cast<float>(player->getSampleRate());
@@ -424,8 +383,9 @@ void Player::loadFile(const QUrl& fileUrl)
 
 void Player::initBuffers()
 {
-    m_inputBuffer[0].resize(MAX_FRAMES * 1.2);
-    m_inputBuffer[1].resize(MAX_FRAMES * 1.2);
+    const std::size_t maxInputFrames{static_cast<std::size_t>(MAX_FRAMES * MAX_SPEED * 1.2f)};
+    m_inputBuffer[0].resize(maxInputFrames);
+    m_inputBuffer[1].resize(maxInputFrames);
 
     constexpr std::size_t maxSize{MAX_FRAMES * static_cast<std::size_t>(1.0 / MIN_SPEED)};
     m_outputBuffer[0].resize(maxSize * 1.2);

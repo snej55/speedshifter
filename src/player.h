@@ -11,7 +11,6 @@
 
 #include <vector>
 #include <atomic>
-#include <mutex>
 #include <array>
 
 // Default: 48kHz stereo
@@ -65,14 +64,14 @@ public:
     void stopPlaybackCallback();
     void updatePositionCallback();
 
-    [[nodiscard]] float speed() const {return m_speed.load();};
+    [[nodiscard]] float speed() const { return m_speed.load(); };
     Q_INVOKABLE
-    void setSpeed(float t) {m_speed.store(std::clamp(t, MIN_SPEED, MAX_SPEED));}
+    void setSpeed(float t) { m_speed.store(std::clamp(t, MIN_SPEED, MAX_SPEED)); }
 
-    [[nodiscard]] float minSpeed() const {return m_minSpeed;}
-    [[nodiscard]] float maxSpeed() const {return m_maxSpeed;}
+    [[nodiscard]] float minSpeed() const { return m_minSpeed; }
+    [[nodiscard]] float maxSpeed() const { return m_maxSpeed; }
 
-    [[nodiscard]] signalsmith::stretch::SignalsmithStretch<float>& getStretcher() {return m_stretcher;}
+    [[nodiscard]] signalsmith::stretch::SignalsmithStretch<float>& getStretcher() { return m_stretcher; }
 
 signals:
     void filePathChanged();
