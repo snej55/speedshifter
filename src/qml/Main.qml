@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Dialogs
+import QtQuick.Shapes
 
 import speedshifter
 
@@ -11,7 +12,7 @@ ApplicationWindow {
     width: 640
     height: 480
     visible: true
-    title: qsTr("speedshifter")
+    title: qsTr("Speed Shifter")
 
     Player {
         id: player
@@ -52,6 +53,10 @@ ApplicationWindow {
     ColumnLayout {
         enabled: musicPath.text ? true : false
         anchors.fill: parent
+
+        /*Item {
+            Layout.fillHeight: true
+        }*/
 
         Item {
             Layout.fillHeight: true
@@ -95,7 +100,7 @@ ApplicationWindow {
             }
         }
 
-        GridLayout {
+        RowLayout {
             Layout.alignment: Qt.AlignBottom
             Layout.bottomMargin: 20
             Layout.leftMargin: 20
@@ -127,6 +132,46 @@ ApplicationWindow {
                 id: musicPath
                 text: basename(player.filePath)
                 Layout.alignment: Qt.AlignHCenter
+            }
+
+            Slider {
+                id: speedSlider
+                from: player.minSpeed * 100
+                to: player.maxSpeed * 100
+                stepSize: 1
+                snapMode: Slider.NoSnap
+
+                value: player.speed * 100
+                onMoved: player.speed = value / 100
+
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignVCenter
+            }
+
+            SpinBox {
+                id: speedSpinBox
+                from: speedSlider.from
+                to: speedSlider.to
+                stepSize: 5
+
+                value: player.speed * 100
+                onValueModified: player.speed = value / 100
+
+                validator: DoubleValidator {
+                    bottom: speedSpinBox.from / 100
+                    top: speedSpinBox.to / 100
+                }
+
+                textFromValue: function (value, locale) {
+                    return Number(value / 100).toLocaleString(locale, 'f', 2) + "x";
+                }
+
+                valueFromText: function (text, locale) {
+                    return Number.fromLocaleString(locale, text.replace("x", "")) * 100;
+                }
+
+                Layout.preferredWidth: 120
+                Layout.alignment: Qt.AlignVCenter
             }
         }
     }

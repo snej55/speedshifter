@@ -179,10 +179,11 @@ void Player::pause()
 void Player::setSpeed(const float t)
 {
     m_speed.store(std::clamp(t, MIN_SPEED, MAX_SPEED));
-    if (m_rbInit)
+    /*if (m_rbInit)
     {
         ma_pcm_rb_reset(&m_ringBuffer);
-    }
+    }*/
+    Q_EMIT speedChanged();
 }
 
 void Player::loadFile(const QUrl& fileUrl)
