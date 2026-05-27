@@ -1,7 +1,9 @@
 // Created by Jens Kromdijk 23/05/2026
 
 #include "player.h"
+#include <chrono>
 #include <qnamespace.h>
+#include <thread>
 
 extern "C" {
 #include <libavformat/avformat.h>
@@ -72,6 +74,8 @@ void maDataCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
 
     player->m_readIndex = currentReadIndex + frames * targetChannels;
 
+    player->m_frameCount.fetch_add(static_cast<std::size_t>(frameCount));
+    player->updatePositionCallback();
     float currentPos = static_cast<float>(player->m_readIndex.load()) / static_cast<float>(player->getChannels()) /
         static_cast<float>(player->getSampleRate());
     if (std::abs(currentPos - player->position()) > 0.2f)
@@ -84,10 +88,21 @@ Player::Player(QObject* parent) : QObject{parent}
 {
     connect(this, &Player::signalStop, this, &Player::handleStop, Qt::QueuedConnection);
     connect(this, &Player::signalPositionUpdate, this, &Player::updatePosition, Qt::QueuedConnection);
+
+    // get ready to process data
+    m_processData.store(true);
+    initWorkerThread();
 }
 
 Player::~Player()
 {
+    // stop processing before device is destroyed
+    m_processData.store(false);
+    if (m_processor.joinable())
+    {
+        m_processor.join();
+    }
+
     if (m_deviceInit)
     {
         ma_device_uninit(&m_device);
@@ -96,6 +111,11 @@ Player::~Player()
     if (m_converterInit)
     {
         ma_data_converter_uninit(&m_converter, nullptr);
+    }
+
+    if (m_rbInit)
+    {
+        ma_pcm_rb_uninit(&m_ringBuffer);
     }
 }
 
@@ -116,9 +136,8 @@ void Player::handleStop() { pause(); }
 
 void Player::updatePosition()
 {
-    float pos{
-        static_cast<float>(m_readIndex.load()) / static_cast<float>(m_channels) / static_cast<float>(m_sampleRate)};
-    if (pos != m_position)
+    float pos{static_cast<float>(m_frameCount.load()) / static_cast<float>(m_sampleRate)};
+    if (std::abs(pos - m_position) > 0.05f)
     {
         m_position = pos;
         Q_EMIT positionChanged();
@@ -127,6 +146,15 @@ void Player::updatePosition()
 
 void Player::setPosition(float seconds)
 {
+    const bool playing{m_playing.load()};
+    m_playing.store(false); // stop processing data
+
+    if (m_rbInit)
+    {
+        // flush ring buffer
+        ma_pcm_rb_reset(&m_ringBuffer);
+    }
+
     seconds = std::clamp(seconds, 0.0f, m_duration);
 
     long targetIndex{static_cast<long>(seconds * static_cast<float>(m_channels) * static_cast<float>(m_sampleRate))};
@@ -134,15 +162,19 @@ void Player::setPosition(float seconds)
     m_readIndex.store(
         static_cast<std::size_t>(std::clamp<long>(targetIndex, 0, static_cast<long>(m_pcmBuffer.size()))));
 
-    m_position = seconds;
-    Q_EMIT positionChanged();
+    m_frameCount.store(static_cast<std::size_t>(seconds * static_cast<float>(m_sampleRate)));
 
+    m_position = seconds;
     m_stretcher.reset();
 
     if (m_deviceInit && m_converterInit)
     {
         ma_data_converter_reset(&m_converter);
     }
+
+    m_playing.store(playing);
+
+    Q_EMIT positionChanged();
 }
 
 void Player::play()
@@ -168,6 +200,15 @@ void Player::pause()
         {
             ma_device_stop(&m_device);
         }
+    }
+}
+
+void Player::setSpeed(const float t)
+{
+    m_speed.store(std::clamp(t, MIN_SPEED, MAX_SPEED));
+    if (m_rbInit)
+    {
+        ma_pcm_rb_reset(&m_ringBuffer);
     }
 }
 
@@ -327,6 +368,17 @@ void Player::loadFile(const QUrl& fileUrl)
     Q_EMIT durationChanged();
     Q_EMIT positionChanged();
 
+    if (!m_rbInit)
+    {
+        if (ma_pcm_rb_init(ma_format_f32, DEVICE_CHANNELS, MAX_FRAMES * 4, nullptr, nullptr, &m_ringBuffer) !=
+            MA_SUCCESS)
+        {
+            qWarning() << "Failed to initialize ring buffer!";
+            return;
+        }
+        m_rbInit = true;
+    }
+    ma_pcm_rb_reset(&m_ringBuffer);
 
     if (!m_deviceInit)
     {
@@ -352,6 +404,8 @@ void Player::loadFile(const QUrl& fileUrl)
         m_stretcher.presetDefault(m_channels, m_sampleRate);
         initBuffers();
     }
+    m_stretcher.reset();
+    m_frameCount.store(0);
 
     if (m_deviceInit && convert)
     {
@@ -444,3 +498,90 @@ int Player::convertPCM(const int sampleRate, const int channels)
 
     return 0;
 }
+
+void processPCM(void* data)
+{
+    if (!data)
+        return;
+
+    Player* player{static_cast<Player*>(data)};
+
+    while (player->m_processData.load())
+    {
+        if (!player->m_playing.load())
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(16));
+            continue;
+        }
+
+        ma_uint32 space{ma_pcm_rb_available_write(&player->m_ringBuffer)};
+
+        if (space >= MAX_FRAMES)
+        {
+            const std::size_t currentReadIndex{player->m_readIndex.load()};
+            const float speed{player->m_speed.load()};
+
+            // calculate frame io size
+            const std::size_t inputFrames{
+                std::max<std::size_t>(static_cast<std::size_t>(static_cast<float>(MAX_FRAMES) * speed + 0.5f), 1)};
+            const std::size_t totalSize{player->m_pcmBuffer.size()};
+            const std::size_t availableSamples{currentReadIndex <= totalSize ? totalSize - currentReadIndex : 0};
+            const std::size_t frames{std::min(inputFrames, availableSamples)};
+
+            // make sure buffers' capacity is big enough
+            if (player->m_inputBuffer[0].size() < inputFrames)
+            {
+                player->m_inputBuffer[0].resize(inputFrames);
+                player->m_inputBuffer[1].resize(inputFrames);
+            }
+
+            if (player->m_outputBuffer[0].size() < MAX_FRAMES)
+            {
+                player->m_outputBuffer[0].resize(MAX_FRAMES);
+                player->m_outputBuffer[1].resize(MAX_FRAMES);
+            }
+
+            // de-interleave data
+            for (std::size_t i{0}; i < inputFrames; ++i)
+            {
+                if (i < frames)
+                {
+                    player->m_inputBuffer[0][i] = player->m_pcmBuffer[currentReadIndex + i * DEVICE_CHANNELS];
+                    player->m_inputBuffer[1][i] = player->m_pcmBuffer[currentReadIndex + i * DEVICE_CHANNELS + 1];
+                    continue;
+                }
+                player->m_inputBuffer[0][i] = 0.0f;
+                player->m_inputBuffer[1][i] = 0.0f;
+            }
+
+            player->m_stretcher.process(
+                player->m_inputBuffer.data(), inputFrames, player->m_outputBuffer.data(), MAX_FRAMES);
+            player->m_readIndex.store(currentReadIndex + frames * DEVICE_CHANNELS);
+
+            // write processed data to ring buffer
+            void* pWriteBuffer;
+            ma_uint32 dataSize{MAX_FRAMES}; // NOTE: dataSize could be less than MAX_FRAMES
+            ma_result result{ma_pcm_rb_acquire_write(&player->m_ringBuffer, &dataSize, &pWriteBuffer)};
+            if (result != MA_SUCCESS || dataSize == 0)
+            {
+                // ring buffer is full
+                continue;
+            }
+
+            float* chunk{static_cast<float*>(pWriteBuffer)};
+            for (std::size_t i{0}; i < dataSize; ++i)
+            {
+                chunk[i * 2] = player->m_outputBuffer[0][i];
+                chunk[i * 2 + 1] = player->m_outputBuffer[1][i];
+            }
+
+            ma_pcm_rb_commit_write(&player->m_ringBuffer, dataSize);
+        }
+        else
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(6));
+        }
+    }
+}
+
+void Player::initWorkerThread() { m_processor = std::thread(processPCM, static_cast<void*>(this)); }

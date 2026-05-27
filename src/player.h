@@ -12,6 +12,7 @@
 #include <vector>
 #include <atomic>
 #include <array>
+#include <thread>
 
 // Default: 48kHz stereo
 #define DEVICE_CHANNELS 2
@@ -66,7 +67,7 @@ public:
 
     [[nodiscard]] float speed() const { return m_speed.load(); };
     Q_INVOKABLE
-    void setSpeed(float t) { m_speed.store(std::clamp(t, MIN_SPEED, MAX_SPEED)); }
+    void setSpeed(float t);
 
     [[nodiscard]] float minSpeed() const { return m_minSpeed; }
     [[nodiscard]] float maxSpeed() const { return m_maxSpeed; }
@@ -109,6 +110,10 @@ private:
     std::array<std::vector<float>, 2> m_inputBuffer{}; // input from m_pcmBuffer
     std::array<std::vector<float>, 2> m_outputBuffer{}; // output from stretcher.processs()
 
+    // ring buffer for audio playback
+    ma_pcm_rb m_ringBuffer;
+    bool m_rbInit{false};
+
     signalsmith::stretch::SignalsmithStretch<float> m_stretcher;
     std::atomic<float> m_speed{1.0f};
     static constexpr float m_minSpeed{MIN_SPEED};
@@ -117,9 +122,15 @@ private:
     std::atomic<bool> m_playing{false};
     float m_position{0.0f};
     float m_duration{0.0f};
+    std::atomic<std::size_t> m_frameCount{0};
 
     // setup miniaudio backend
     friend void maDataCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount);
+    // worker thread process (processes PCM data)
+    std::thread m_processor;
+    std::atomic<bool> m_processData{true};
+    friend void processPCM(void* data);
+    void initWorkerThread();
 
     [[nodiscard]] int convertPCM(int sampleRate, int channels);
     void initBuffers();
