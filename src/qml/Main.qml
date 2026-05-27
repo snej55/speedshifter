@@ -11,6 +11,8 @@ ApplicationWindow {
 
     width: 640
     height: 480
+    minimumWidth: 360
+    minimumHeight: 300
     visible: true
     title: qsTr("Speed Shifter")
 
@@ -60,6 +62,22 @@ ApplicationWindow {
 
         Item {
             Layout.fillHeight: true
+        }
+
+        Rectangle {
+            id: divider
+            Layout.fillWidth: true
+            height: 1
+            color: root.palette.buttonText
+            opacity: 0.15
+            Layout.bottomMargin: 5
+        }
+
+        Label {
+            id: musicPath
+            text: basename(player.filePath)
+            Layout.alignment: Qt.AlignHCenter
+            Layout.bottomMargin: 5
         }
 
         Slider {
@@ -126,12 +144,6 @@ ApplicationWindow {
                     player.position = 0;
                     player.pause();
                 }
-            }
-
-            Label {
-                id: musicPath
-                text: basename(player.filePath)
-                Layout.alignment: Qt.AlignHCenter
             }
 
             Slider {
