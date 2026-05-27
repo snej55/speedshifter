@@ -3,3 +3,5 @@
 /.cache
 /.vscode
 /build
+/.qtcreator
+/.kdev4
