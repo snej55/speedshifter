@@ -35,7 +35,7 @@ void maDataCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
         std::memcpy(outputBuffer, pReadBuffer, frames * DEVICE_CHANNELS * sizeof(float));
         ma_pcm_rb_commit_read(&player->m_ringBuffer, frames);
 
-        player->m_frameCount.fetch_add(static_cast<std::size_t>(frames));
+        player->m_frameCount.fetch_add(static_cast<std::size_t>(static_cast<float>(frameCount) * player->m_speed.load()));
 
         if (frames < frameCount)
         {

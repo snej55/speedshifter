@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Dialogs
-import QtQuick.Shapes
 
 import speedshifter
 
@@ -60,8 +59,22 @@ ApplicationWindow {
             Layout.fillHeight: true
         }*/
 
-        Item {
+        Rectangle {
+            id: waveContainer
+            Layout.fillWidth: true
             Layout.fillHeight: true
+
+            gradient: Gradient {
+                orientation: Gradient.Horizontal
+                GradientStop {
+                    position: 0.0
+                    color: "#e55d5b"
+                }
+                GradientStop {
+                    position: 1.0
+                    color: "#d63031"
+                }
+            }
         }
 
         Rectangle {
