@@ -7,6 +7,7 @@
 #include <qqml.h>
 
 #include <miniaudio.h>
+#include <qtmetamacros.h>
 #include <signalsmith-stretch.h>
 
 #include <vector>
@@ -21,6 +22,7 @@
 
 #define MIN_SPEED 0.2f
 #define MAX_SPEED 2.f
+#define SAMPLE_DENSITY 800
 
 class Player : public QObject
 {
@@ -30,8 +32,17 @@ class Player : public QObject
     Q_PROPERTY(float position READ position WRITE setPosition NOTIFY positionChanged)
     Q_PROPERTY(float duration READ duration NOTIFY durationChanged)
     Q_PROPERTY(float speed READ speed WRITE setSpeed NOTIFY speedChanged)
-    Q_PROPERTY(float minSpeed READ minSpeed)
-    Q_PROPERTY(float maxSpeed READ maxSpeed)
+    Q_PROPERTY(int durationInSeconds READ durationInSeconds)
+
+    static constexpr int s_sampleDensity{SAMPLE_DENSITY};
+    static constexpr float s_minSpeed{MIN_SPEED};
+    static constexpr float s_maxSpeed{MAX_SPEED};
+    Q_PROPERTY(int sampleDensity MEMBER s_sampleDensity CONSTANT)
+    Q_PROPERTY(float minSpeed MEMBER s_minSpeed CONSTANT)
+    Q_PROPERTY(float maxSpeed MEMBER s_maxSpeed CONSTANT)
+
+    Q_PROPERTY(QList<float> displayBuffer READ displayBuffer NOTIFY displayBufferChanged)
+
     QML_ELEMENT
 
 public:
@@ -69,8 +80,12 @@ public:
     Q_INVOKABLE
     void setSpeed(float t);
 
-    [[nodiscard]] float minSpeed() const { return m_minSpeed; }
-    [[nodiscard]] float maxSpeed() const { return m_maxSpeed; }
+    [[nodiscard]] int durationInSeconds() const
+    {
+        return static_cast<int>(m_pcmBuffer.size()) / m_channels / m_sampleRate;
+    }
+
+    [[nodiscard]] QList<float> displayBuffer() const { return m_displayBuffer; }
 
     [[nodiscard]] signalsmith::stretch::SignalsmithStretch<float>& getStretcher() { return m_stretcher; }
 
@@ -84,6 +99,8 @@ signals:
     void signalPositionUpdate();
 
     void speedChanged();
+
+    void displayBufferChanged();
 
 private slots:
     void handleStop();
@@ -100,7 +117,9 @@ private:
 
     // raw PCM data in RAM
     std::vector<float> m_pcmBuffer{};
+    QList<float> m_displayBuffer{};
     std::atomic<std::size_t> m_readIndex{0};
+
     // defaults (44.1 kHz stereo)
     int m_sampleRate{44100};
     int m_channels{2};
@@ -134,6 +153,7 @@ private:
 
     [[nodiscard]] int convertPCM(int sampleRate, int channels);
     void initBuffers();
+    void desamplePCM();
 };
 
 #endif // SPEEDSHIFTER_PLAYER_H

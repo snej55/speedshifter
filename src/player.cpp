@@ -35,7 +35,8 @@ void maDataCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
         std::memcpy(outputBuffer, pReadBuffer, frames * DEVICE_CHANNELS * sizeof(float));
         ma_pcm_rb_commit_read(&player->m_ringBuffer, frames);
 
-        player->m_frameCount.fetch_add(static_cast<std::size_t>(static_cast<float>(frameCount) * player->m_speed.load()));
+        player->m_frameCount.fetch_add(
+            static_cast<std::size_t>(static_cast<float>(frameCount) * player->m_speed.load()));
 
         if (frames < frameCount)
         {
@@ -381,6 +382,9 @@ void Player::loadFile(const QUrl& fileUrl)
     m_stretcher.reset();
     m_frameCount.store(0);
 
+    // for displaying PCM data
+    desamplePCM();
+
     if (m_deviceInit && convert)
     {
         if (m_converterInit)
@@ -580,3 +584,35 @@ void processPCM(void* data)
 }
 
 void Player::initWorkerThread() { m_processor = std::thread(processPCM, static_cast<void*>(this)); }
+
+// desample for visualisation (we don't need 48,000 samples per second being displayed)
+void Player::desamplePCM()
+{
+    m_displayBuffer.clear();
+    if (m_pcmBuffer.empty())
+    {
+        return;
+    }
+
+    const std::size_t stepSize{SAMPLE_DENSITY * static_cast<std::size_t>(m_channels)};
+    for (std::size_t i{0}; i < m_pcmBuffer.size(); i += stepSize)
+    {
+        // find the peak
+        float max{0.0f};
+        for (std::size_t j{0}; j < stepSize && (i + j) < m_pcmBuffer.size(); ++j)
+        {
+            max = std::max(max, std::abs(m_pcmBuffer[i + j]));
+        }
+        m_displayBuffer.append(max);
+    }
+
+    Q_EMIT displayBufferChanged();
+
+    /*    const int numSamples{durationInSeconds() * SAMPLE_DENSITY * 2};
+        m_displayBuffer.resize(numSamples);
+        for (std::size_t i{0}; i < m_pcmBuffer.size() / 2; i += m_channels / SAMPLE_DENSITY)
+        {
+            m_displayBuffer.emplace_back(m_pcmBuffer[i * 2]);
+            m_displayBuffer.emplace_back(m_pcmBuffer[i * 2 + 1]);
+        }*/
+}

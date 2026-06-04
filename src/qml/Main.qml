@@ -20,7 +20,7 @@ ApplicationWindow {
     }
 
     function basename(str) {
-        return (str.slice(str.lastIndexOf("/") + 1));
+        return str.slice(str.lastIndexOf("/") + 1);
     }
 
     FileDialog {
@@ -59,20 +59,50 @@ ApplicationWindow {
             Layout.fillHeight: true
         }*/
 
-        Rectangle {
+        Item {
             id: waveContainer
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            gradient: Gradient {
-                orientation: Gradient.Horizontal
-                GradientStop {
-                    position: 0.0
-                    color: "#e55d5b"
+            ListView {
+                id: waveListView
+                anchors.fill: parent
+                orientation: ListView.Horizontal
+                interactive: false
+
+                model: player.displayBuffer
+
+                readonly property real itemWidth: 3
+                property real posX: player.duration > 0 ? (player.position / player.duration) * count * itemWidth - (width / 2) : 0
+                contentX: posX
+
+                Behavior on contentX {
+                    NumberAnimation {
+                        duration: 1000 / player.speed
+                        easing.type: Easing.OutCubic
+                    }
                 }
-                GradientStop {
-                    position: 1.0
-                    color: "#d63031"
+
+                // currentIndex: player.duration > 0 ? Math.floor((player.position / player.duration) * waveListView.count) : 0
+
+                delegate: Item {
+                    width: 3
+                    height: waveListView.height
+
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: parent.width
+                        height: Math.max(4, modelData * parent.height * 0.8)
+                        //radius: 3
+                        color: (index * waveListView.itemWidth) <= (waveListView.posX + waveListView.width / 2) ? root.palette.highlight : root.palette.placeholderText
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 120
+                                easing.type: Easing.InOutQuad
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -177,7 +207,7 @@ ApplicationWindow {
                 id: speedSpinBox
                 from: speedSlider.from
                 to: speedSlider.to
-                stepSize: 5
+                stepSize: 1
 
                 value: player.speed * 100
                 onValueModified: player.speed = value / 100
