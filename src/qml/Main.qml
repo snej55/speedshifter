@@ -208,12 +208,14 @@ ApplicationWindow {
                 to: speedSlider.to
                 stepSize: 1
 
-                value: player.speed * 100
+		Binding on value {
+		    value: Math.round(player.speed * 100)
+		}
                 onValueModified: player.speed = value / 100
 
-                validator: DoubleValidator {
-                    bottom: speedSpinBox.from / 100
-                    top: speedSpinBox.to / 100
+                validator: IntValidator {
+                    bottom: speedSpinBox.from
+                    top: speedSpinBox.to
                 }
 
                 textFromValue: function (value, locale) {
@@ -221,7 +223,13 @@ ApplicationWindow {
                 }
 
                 valueFromText: function (text, locale) {
-                    return Number.fromLocaleString(locale, text.replace("x", "")) * 100;
+		    let clean = text.replace(/[^0-9.,-]/g, "");
+		    let num = Number.fromLocalString(locale, clean);
+		    if (isNaN(num)) {
+			return speedSpinBox.value;
+		    }
+
+		    return Math.round(num * 100);
                 }
 
                 Layout.preferredWidth: 120
