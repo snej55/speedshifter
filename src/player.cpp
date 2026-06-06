@@ -594,7 +594,8 @@ void Player::desamplePCM()
         return;
     }
 
-    const std::size_t stepSize{SAMPLE_DENSITY * static_cast<std::size_t>(m_channels)};
+    const std::size_t stepSize{
+        static_cast<std::size_t>(m_sampleRate) / SAMPLE_DENSITY * static_cast<std::size_t>(m_channels)};
     for (std::size_t i{0}; i < m_pcmBuffer.size(); i += stepSize)
     {
         // find the peak

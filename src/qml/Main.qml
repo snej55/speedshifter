@@ -72,13 +72,13 @@ ApplicationWindow {
 
                 model: player.displayBuffer
 
-                readonly property real itemWidth: 3
+                readonly property real itemWidth: 2
                 property real posX: player.duration > 0 ? (player.position / player.duration) * count * itemWidth - (width / 2) : 0
                 contentX: posX
 
                 Behavior on contentX {
                     NumberAnimation {
-                        duration: 1000 / player.speed
+                        duration: 200 / player.speed
                         easing.type: Easing.OutCubic
                     }
                 }
@@ -86,19 +86,18 @@ ApplicationWindow {
                 // currentIndex: player.duration > 0 ? Math.floor((player.position / player.duration) * waveListView.count) : 0
 
                 delegate: Item {
-                    width: 3
+                    width: waveListView.itemWidth - waveListView.spacing
                     height: waveListView.height
 
                     Rectangle {
                         anchors.centerIn: parent
                         width: parent.width
                         height: Math.max(4, modelData * parent.height * 0.8)
-                        //radius: 3
                         color: (index * waveListView.itemWidth) <= (waveListView.posX + waveListView.width / 2) ? root.palette.highlight : root.palette.placeholderText
 
                         Behavior on color {
                             ColorAnimation {
-                                duration: 120
+                                duration: 130
                                 easing.type: Easing.InOutQuad
                             }
                         }

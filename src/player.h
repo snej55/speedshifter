@@ -22,7 +22,7 @@
 
 #define MIN_SPEED 0.2f
 #define MAX_SPEED 2.f
-#define SAMPLE_DENSITY 800
+#define SAMPLE_DENSITY 100
 
 class Player : public QObject
 {
