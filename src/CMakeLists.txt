@@ -33,11 +33,27 @@ target_include_directories(signalsmith-stretch INTERFACE
     ${signalsmith_linear_download_SOURCE_DIR}
 )
 
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(AVFORMAT REQUIRED libavformat)
-pkg_check_modules(AVCODEC REQUIRED libavcodec)
-pkg_check_modules(AVUTIL REQUIRED libavutil)
-pkg_check_modules(SWRESAMPLE REQUIRED libswresample)
+if (NOT WIN32 AND NOT APPLE AND NOT ANDROID)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(AVFORMAT REQUIRED libavformat)
+    pkg_check_modules(AVCODEC REQUIRED libavcodec)
+    pkg_check_modules(AVUTIL REQUIRED libavutil)
+    pkg_check_modules(SWRESAMPLE REQUIRED libswresample)
+else()
+    set(AVFORMAT_INCLUDE_DIRS "" CACHE STRING "Injected avformat include path")
+    set(AVFORMAT_LIBRARIES "" CACHE STRING "Injected avformat library path")
+    
+    set(AVCODEC_INCLUDE_DIRS "" CACHE STRING "Injected avcodec include path")
+    set(AVCODEC_LIBRARIES "" CACHE STRING "Injected avcodec library path")
+    
+    set(AVUTIL_INCLUDE_DIRS "" CACHE STRING "Injected avutil include path")
+    set(AVUTIL_LIBRARIES "" CACHE STRING "Injected avutil library path")
+    
+    set(SWRESAMPLE_INCLUDE_DIRS "" CACHE STRING "Injected swresample include path")
+    set(SWRESAMPLE_LIBRARIES "" CACHE STRING "Injected swresample library path")
+
+    message(STATUS "Using manually injected ffmpeg targets (not on lInux)")
+endif()
 
 qt_add_executable(${BIN_NAME}
     main.cpp
