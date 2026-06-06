@@ -19,6 +19,24 @@ ApplicationWindow {
         id: player
     }
 
+    Shortcut {
+        sequence: "Space"
+        onActivated: {
+            if (musicPath.text) {
+                playButton.clicked();
+            }
+        }
+    }
+
+    Shortcut {
+        sequence: "K"
+        onActivated: {
+            if (musicPath.text) {
+                playButton.clicked();
+            }
+        }
+    }
+
     function basename(str) {
         return str.slice(str.lastIndexOf("/") + 1);
     }
@@ -72,7 +90,7 @@ ApplicationWindow {
 
                 model: player.displayBuffer
 
-                readonly property real itemWidth: 2
+                readonly property real itemWidth: 4
                 property real posX: player.duration > 0 ? (player.position / player.duration) * count * itemWidth - (width / 2) : 0
                 contentX: posX
 
@@ -92,13 +110,19 @@ ApplicationWindow {
                     Rectangle {
                         anchors.centerIn: parent
                         width: parent.width
-                        height: Math.max(4, modelData * parent.height * 0.8)
+                        height: Math.max(4, modelData * parent.height * 0.8 * Math.min(1.0, Math.max(0.0, 1.0 - Math.pow((index * waveListView.itemWidth - (waveListView.posX + waveListView.width / 2)) / (waveListView.width / 2), 49.0))))
+                        Behavior on height {
+                            NumberAnimation {
+                                duration: 50
+                                easing.type: Easing.InOutQuad
+                            }
+                        }
                         color: (index * waveListView.itemWidth) <= (waveListView.posX + waveListView.width / 2) ? root.palette.highlight : root.palette.placeholderText
 
                         Behavior on color {
                             ColorAnimation {
                                 duration: 130
-                                easing.type: Easing.InOutQuad
+                                easing.type: Easing.Linear
                             }
                         }
                     }
@@ -173,8 +197,12 @@ ApplicationWindow {
                 onClicked: {
                     if (player.playing)
                         player.pause();
-                    else
+                    else {
+                        if (player.position == player.duration) {
+                            player.position = 0;
+                        }
                         player.play();
+                    }
                 }
             }
 
@@ -208,9 +236,9 @@ ApplicationWindow {
                 to: speedSlider.to
                 stepSize: 1
 
-		Binding on value {
-		    value: Math.round(player.speed * 100)
-		}
+                Binding on value {
+                    value: Math.round(player.speed * 100)
+                }
                 onValueModified: player.speed = value / 100
 
                 validator: IntValidator {
@@ -223,13 +251,13 @@ ApplicationWindow {
                 }
 
                 valueFromText: function (text, locale) {
-		    let clean = text.replace(/[^0-9.,-]/g, "");
-		    let num = Number.fromLocalString(locale, clean);
-		    if (isNaN(num)) {
-			return speedSpinBox.value;
-		    }
+                    let clean = text.replace(/[^0-9.,-]/g, "");
+                    let num = Number.fromLocalString(locale, clean);
+                    if (isNaN(num)) {
+                        return speedSpinBox.value;
+                    }
 
-		    return Math.round(num * 100);
+                    return Math.round(num * 100);
                 }
 
                 Layout.preferredWidth: 120

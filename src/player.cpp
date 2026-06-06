@@ -112,6 +112,7 @@ void Player::updatePosition()
         m_position = pos;
         if (m_position >= m_duration)
         {
+            m_position = m_duration;
             stopPlaybackCallback();
         }
         Q_EMIT positionChanged();
