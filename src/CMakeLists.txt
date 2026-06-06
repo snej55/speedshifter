@@ -62,6 +62,9 @@ qt_add_executable(${BIN_NAME}
 qt_add_qml_module(${BIN_NAME}
     URI speedshifter
     VERSION 1.0
+
+    RESOURCE_PREFIX "/"
+
     QML_FILES
         qml/Main.qml
 
@@ -70,6 +73,7 @@ qt_add_qml_module(${BIN_NAME}
         player.cpp
 )
 target_include_directories(${BIN_NAME} PRIVATE
+    .
     ${AVFORMAT_INCLUDE_DIRS}
     ${AVCODEC_INCLUDE_DIRS}
     ${AVUTIL_INCLUDE_DIRS}
