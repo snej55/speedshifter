@@ -51,8 +51,23 @@ jobs:
       - name: Package Windows artifacts
         shell: cmd
         run: |
-          windeployqt --qmldir qml/ build/main.exe
+          set PATH=%Qt6_DIR%\bin;%PATH%
+          windeployqt --qmldir . build/main.exe
           copy "C:\ffmpeg\bin\*.dll" "build\"
+
+      - name: Test executable
+        shell: powershell
+        run: |
+          $process = Start-Process -FilePath "build\main.exe" -PassThru
+          Start-Sleep -Seconds 5
+
+          if ($process.HasExited) {
+            Write-Error "Program crashed!"
+            exit 1
+          } else {
+            Write-Output "Program started successfully! Closing..."
+            Stop-Process -Id $process.Id
+          }
 
       - name: Upload Windows result
         uses: actions/upload-artifact@v4
