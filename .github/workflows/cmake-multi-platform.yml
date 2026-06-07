@@ -10,7 +10,6 @@ on:
 
 jobs:
   build-windows:
-      
     runs-on: windows-latest
     steps:
       - name: Checkout code
@@ -26,8 +25,8 @@ jobs:
         with:
           host: windows
           arch: win64_msvc2022_64
-          target: 'desktop'
-          version: '6.8.2'
+          target: "desktop"
+          version: "6.8.2"
 
       - name: Get ffmpeg binaries
         run: |
@@ -52,27 +51,24 @@ jobs:
         shell: cmd
         run: |
           set PATH=%Qt6_DIR%\bin;%PATH%
-          windeployqt --qmldir src build/main.exe
+          windeployqt --qmldir src\qml build/main.exe
           copy "C:\ffmpeg\bin\*.dll" "build\"
 
-      # - name: Test executable
-      #   shell: powershell
-      #   run: |
-      #     $process = Start-Process -FilePath "build\main.exe" -PassThru
-      #     Start-Sleep -Seconds 5
+      - name: Smoke test packaged executable
+        shell: powershell
+        run: |
+          $process = Start-Process -FilePath "build\main.exe" -ArgumentList "-platform", "offscreen" -PassThru
+          for ($i = 0; $i -lt 10; $i++) {
+            Start-Sleep -Seconds 1
+            if ($process.HasExited) {
+              throw "Packaged executable exited early with code $($process.ExitCode)"
+            }
+          }
 
-      #     if ($process.HasExited) {
-      #       Write-Error "Program crashed!"
-      #       exit 1
-      #     } else {
-      #       Write-Output "Program started successfully! Closing..."
-      #       Stop-Process -Id $process.Id
-      #     }
+          Stop-Process -Id $process.Id
 
       - name: Upload Windows result
         uses: actions/upload-artifact@v4
         with:
           name: Speedshifter-Windows-x64
           path: build/
-        
-        
