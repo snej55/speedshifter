@@ -57,15 +57,23 @@ jobs:
       - name: Smoke test packaged executable
         shell: powershell
         run: |
-          $process = Start-Process -FilePath "build\main.exe" -ArgumentList "-platform", "offscreen" -PassThru
-          for ($i = 0; $i -lt 10; $i++) {
-            Start-Sleep -Seconds 1
-            if ($process.HasExited) {
-              throw "Packaged executable exited early with code $($process.ExitCode)"
-            }
-          }
+          $stdout = "build\main.stdout.log"
+          $stderr = "build\main.stderr.log"
+          $process = Start-Process -FilePath "build\main.exe" -ArgumentList "-platform", "offscreen" -PassThru `
+            -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+          $process.WaitForExit()
 
-          Stop-Process -Id $process.Id
+          Write-Host "::group::main.exe stdout"
+          if (Test-Path $stdout) { Get-Content $stdout }
+          Write-Host "::endgroup::"
+
+          Write-Host "::group::main.exe stderr"
+          if (Test-Path $stderr) { Get-Content $stderr }
+          Write-Host "::endgroup::"
+
+          if ($process.ExitCode -ne 0) {
+            throw "Packaged executable exited with code $($process.ExitCode)"
+          }
 
       - name: Upload Windows result
         uses: actions/upload-artifact@v4
