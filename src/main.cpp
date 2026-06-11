@@ -1,11 +1,13 @@
 #include <QGuiApplication>
+#include <QIcon>
 #include <QQmlApplicationEngine>
 #include <QtQuick>
 
 int main(int argc, char* argv[])
 {
-    qputenv("QT_QUICK_CONTROLS_STYLE", "Fusion");
+    // qputenv("QT_QUICK_CONTROLS_STYLE", "Fusion");
     QGuiApplication app(argc, argv);
+    QGuiApplication::setWindowIcon(QIcon(":/icon.png"));
 
     QQmlApplicationEngine engine;
 

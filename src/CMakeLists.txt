@@ -49,6 +49,36 @@ if (WIN32)
     set_target_properties(${BIN_NAME} PROPERTIES WIN32_EXECUTABLE TRUE)
 endif()
 
+if (ANDROID)
+    set_target_properties(${BIN_NAME} PROPERTIES
+        QT_ANDROID_APP_ICON "${CMAKE_CURRENT_SOURCE_DIR}/../icon.png"
+    )
+endif()
+
+set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/../icon.png PROPERTIES
+    QT_RESOURCE_ALIAS "icon.png"
+)
+
+if (APPLE)
+    set_target_properties(${BIN_NAME} PROPERTIES
+        MACOSX_BUNDLE_ICON_FILE "icon.icns"
+    )
+
+    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/../icon.icns PROPERTIES
+        MACOSX_PACKAGE_LOCATION Resources
+    )
+
+    target_sources(${BIN_NAME} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/../icon.icns
+    )
+endif()
+
+if (WIN32)
+    target_sources(${BIN_NAME} PRIVATE
+        appicon.rc
+    )
+endif()
+
 qt_add_qml_module(${BIN_NAME}
     URI speedshifter
     VERSION 1.0
@@ -65,6 +95,7 @@ qt_add_resources(${BIN_NAME} speedshifter_icons
     PREFIX "/"
     FILES
         qtquickcontrols2.conf
+        ${CMAKE_CURRENT_SOURCE_DIR}/../icon.png
         icons/play.svg
         icons/pause.svg
         icons/stop.svg

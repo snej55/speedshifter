@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Dialogs
+import Qt5Compat.GraphicalEffects
 
 import speedshifter
 
@@ -194,10 +195,24 @@ ApplicationWindow {
             Button {
                 id: playButton
                 display: AbstractButton.IconOnly
-                icon.source: player.playing ? "qrc:/icons/pause.svg" : "qrc:/icons/play.svg"
-                icon.color: root.palette.buttonText
-                icon.width: 20
-                icon.height: 20
+                contentItem: Item {
+                    implicitWidth: 20
+                    implicitHeight: 20
+
+                    Image {
+                        id: playButtonIcon
+                        anchors.fill: parent
+                        source: player.playing ? "qrc:/icons/pause.svg" : "qrc:/icons/play.svg"
+                        fillMode: Image.PreserveAspectFit
+                        smooth: true
+                    }
+
+                    ColorOverlay {
+                        anchors.fill: playButtonIcon
+                        source: playButtonIcon
+                        color: playButton.enabled ? root.palette.buttonText : root.palette.disabled.buttonText
+                    }
+                }
                 onClicked: {
                     if (player.playing)
                         player.pause();
@@ -213,10 +228,24 @@ ApplicationWindow {
             Button {
                 id: stopButton
                 display: AbstractButton.IconOnly
-                icon.source: "qrc:/icons/stop.svg"
-                icon.color: root.palette.buttonText
-                icon.width: 20
-                icon.height: 20
+                contentItem: Item {
+                    implicitWidth: 20
+                    implicitHeight: 20
+
+                    Image {
+                        id: stopButtonIcon
+                        anchors.fill: parent
+                        source: "qrc:/icons/stop.svg"
+                        fillMode: Image.PreserveAspectFit
+                        smooth: true
+                    }
+
+                    ColorOverlay {
+                        anchors.fill: stopButtonIcon
+                        source: stopButtonIcon
+                        color: stopButton.enabled ? root.palette.buttonText : root.palette.disabled.buttonText
+                    }
+                }
 
                 onClicked: {
                     player.position = 0;
