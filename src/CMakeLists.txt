@@ -45,19 +45,29 @@ qt_add_executable(${BIN_NAME}
     main.cpp
 )
 
+if (WIN32)
+    set_target_properties(${BIN_NAME} PROPERTIES WIN32_EXECUTABLE TRUE)
+endif()
+
 qt_add_qml_module(${BIN_NAME}
     URI speedshifter
     VERSION 1.0
 
     QML_FILES
         qml/Main.qml
-    
-    RESOURCES
-        speedshifter.qrc
 
     SOURCES
         player.h
         player.cpp
+)
+
+qt_add_resources(${BIN_NAME} speedshifter_icons
+    PREFIX "/"
+    FILES
+        qtquickcontrols2.conf
+        icons/play.svg
+        icons/pause.svg
+        icons/stop.svg
 )
 
 target_include_directories(${BIN_NAME} PRIVATE
@@ -69,7 +79,7 @@ target_include_directories(${BIN_NAME} PRIVATE
 )
 
 # Use the QtQuick module from Qt 6.
-target_link_libraries(${BIN_NAME} PRIVATE Qt6::Quick miniaudio signalsmith-stretch ${AVFORMAT_LIBRARIES}
+target_link_libraries(${BIN_NAME} PRIVATE Qt6::Quick Qt6::Svg miniaudio signalsmith-stretch ${AVFORMAT_LIBRARIES}
     ${AVCODEC_LIBRARIES}
     ${AVUTIL_LIBRARIES}
     ${SWRESAMPLE_LIBRARIES})

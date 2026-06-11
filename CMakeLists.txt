@@ -8,7 +8,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 project(speedshifter VERSION 1.0.0 LANGUAGES CXX)
 
 # Find the Qt Quick library
-find_package(Qt6 6.5 REQUIRED COMPONENTS Quick)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Quick Svg)
 
 qt_policy(SET QTP0004 NEW)
 qt_policy(SET QTP0001 NEW)

@@ -193,7 +193,11 @@ ApplicationWindow {
 
             Button {
                 id: playButton
-                icon.name: player.playing ? "media-playback-pause" : "media-playback-start"
+                display: AbstractButton.IconOnly
+                icon.source: player.playing ? "qrc:/icons/pause.svg" : "qrc:/icons/play.svg"
+                icon.color: root.palette.buttonText
+                icon.width: 20
+                icon.height: 20
                 onClicked: {
                     if (player.playing)
                         player.pause();
@@ -208,7 +212,11 @@ ApplicationWindow {
 
             Button {
                 id: stopButton
-                icon.name: "media-playback-stop"
+                display: AbstractButton.IconOnly
+                icon.source: "qrc:/icons/stop.svg"
+                icon.color: root.palette.buttonText
+                icon.width: 20
+                icon.height: 20
 
                 onClicked: {
                     player.position = 0;
