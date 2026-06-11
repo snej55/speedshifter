@@ -28,6 +28,11 @@ jobs:
           target: "desktop"
           version: "6.8.2"
 
+      - name: Set up MSVC developer environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
       - name: Get ffmpeg binaries
         run: |
           Invoke-WebRequest -Uri "https://github.com/GyanD/codexffmpeg/releases/download/8.1.1/ffmpeg-8.1.1-full_build-shared.zip" -OutFile "ffmpeg.zip"
@@ -38,7 +43,6 @@ jobs:
       - name: Compile Windows native target
         shell: cmd
         run: |
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           cmake -B build -G Ninja ^
             -DCMAKE_BUILD_TYPE=Release ^
             -DAVFORMAT_INCLUDE_DIRS="C:/ffmpeg/include" -DAVFORMAT_LIBRARIES="C:/ffmpeg/lib/avformat.lib" ^
