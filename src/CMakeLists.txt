@@ -51,11 +51,15 @@ qt_add_qml_module(${BIN_NAME}
 
     QML_FILES
         qml/Main.qml
+    
+    RESOURCES
+        speedshifter.qrc
 
     SOURCES
         player.h
         player.cpp
 )
+
 target_include_directories(${BIN_NAME} PRIVATE
     .
     ${AVFORMAT_INCLUDE_DIRS}
