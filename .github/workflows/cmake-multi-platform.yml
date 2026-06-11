@@ -57,25 +57,53 @@ jobs:
       - name: Smoke test packaged executable
         shell: powershell
         run: |
+          New-Item -ItemType Directory -Force -Path "build"
           $stdout = "build\main.stdout.log"
           $stderr = "build\main.stderr.log"
-          $process = Start-Process -FilePath "build\main.exe" -ArgumentList "-platform", "offscreen" -PassThru `
-            -RedirectStandardOutput $stdout -RedirectStandardError $stderr
-          $process.WaitForExit()
 
-          Write-Host "::group::main.exe stdout"
-          if (Test-Path $stdout) { Get-Content $stdout }
-          Write-Host "::endgroup::"
+          # add qt and ffmpeg to PATH
+          $env:PATH = "{{ env.Qt6_DIR }}\bin;C:\ffmpeg\bin;" + $env:PATH
 
-          Write-Host "::group::main.exe stderr"
-          if (Test-Path $stderr) { Get-Content $stderr }
-          Write-Host "::endgroup::"
+          try {
+            Write-Host "Starting test..."
+            $process = Start-Process -FilePath "build\main.exe" -ArgumentList "-platform", "offscreen" -PassThru `
+                -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+            $process.WaitForExit(10000)
 
-          if ($process.ExitCode -ne 0) {
-            throw "Packaged executable exited with code $($process.ExitCode)"
+            if (!$process.HasExited) {
+              Write-Host "Process timed out. Killing it..."
+              Stop-Process -Id $process.Id -Force
+            }
+          }
+          catch {
+            Write-Host "::error::Failed to test program: $_"
+          }
+          finally {
+            Write-Host "::group::main.exe stdout"
+            if (Test-Path $stdout) { Get-Content $stdout } else { Write-Host "No stdout log found." }
+            Write-Host "::endgroup::"
+
+            Write-Host "::group::main.exe stderr"
+            if (Test-Path $stderr) { Get-Content $stderr } else { Write-Host "No stderr log found." }
+            Write-Host "::endgroup::"
+
+            if ($null -eq $process) {
+              exit 1
+            } elseif ($process.ExitCode -ne 0) {
+              Write-Host "::error::Packaged executable exited with code $($process.ExitCode)"
+              exit $process.ExitCode
+            }
           }
 
+      - name: Upload smoke test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-logs
+          path: build/*.log
+
       - name: Upload Windows result
+        if: always() # so we can test executable on our own
         uses: actions/upload-artifact@v4
         with:
           name: Speedshifter-Windows-x64
