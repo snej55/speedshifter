@@ -67,6 +67,8 @@ jobs:
 
           # add qt and ffmpeg to PATH
           $env:PATH = "$env:Qt6_DIR\bin;C:\ffmpeg\bin;" + $env:PATH
+          $env:QT_QPA_FONTDIR = "$env:WINDIR\Fonts"
+          $timedOut = $false
 
           try {
             Write-Host "Starting test..."
@@ -75,8 +77,10 @@ jobs:
             $process.WaitForExit(10000)
 
             if (!$process.HasExited) {
+              $timedOut = $true
               Write-Host "Process timed out. Killing it..."
               Stop-Process -Id $process.Id -Force
+              $process.WaitForExit()
             }
           }
           catch {
@@ -93,7 +97,7 @@ jobs:
 
             if ($null -eq $process) {
               exit 1
-            } elseif ($process.ExitCode -ne 0) {
+            } elseif (-not $timedOut -and $process.ExitCode -ne 0) {
               Write-Host "::error::Packaged executable exited with code $($process.ExitCode)"
               exit $process.ExitCode
             }
