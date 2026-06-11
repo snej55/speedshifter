@@ -55,7 +55,7 @@ jobs:
         shell: cmd
         run: |
           set PATH=%Qt6_DIR%\bin;%PATH%
-          windeployqt --qmldir src\qml --qmldir build\src\speedshifter build/main.exe
+          windeployqt --qmldir src\qml build/main.exe
           copy "C:\ffmpeg\bin\*.dll" "build\"
 
       - name: Smoke test packaged executable
