@@ -11,6 +11,7 @@ project(speedshifter VERSION 1.0.0 LANGUAGES CXX)
 find_package(Qt6 6.5 REQUIRED COMPONENTS Quick)
 
 qt_policy(SET QTP0004 NEW)
+qt_policy(SET QTP0001 NEW)
 qt_standard_project_setup()
 
 if (WIN32 OR APPLE OR ANDROID)

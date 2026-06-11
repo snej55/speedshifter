@@ -49,8 +49,6 @@ qt_add_qml_module(${BIN_NAME}
     URI speedshifter
     VERSION 1.0
 
-    RESOURCE_PREFIX "/"
-
     QML_FILES
         qml/Main.qml
 
