@@ -68,6 +68,10 @@ jobs:
           # add qt and ffmpeg to PATH
           $env:PATH = "$env:Qt6_DIR\bin;C:\ffmpeg\bin;" + $env:PATH
           $env:QT_QPA_FONTDIR = "$env:WINDIR\Fonts"
+          $env:QT_DEBUG_PLUGINS = "1"
+          $env:QML_IMPORT_TRACE = "1"
+          $env:QT_LOGGING_RULES = "*.debug=true;qt.qpa.*=true"
+          $env:QT_QUICK_BACKEND = "software"
           $timedOut = $false
 
           try {
@@ -94,6 +98,10 @@ jobs:
             Write-Host "::group::main.exe stderr"
             if (Test-Path $stderr) { Get-Content $stderr } else { Write-Host "No stderr log found." }
             Write-Host "::endgroup::"
+
+            if ($process) {
+              Write-Host "ExitCode: $($process.ExitCode)"
+            }
 
             if ($null -eq $process) {
               exit 1
